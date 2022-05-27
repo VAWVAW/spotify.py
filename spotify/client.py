@@ -4,13 +4,14 @@ from typing import List
 
 from .connection import Connection
 from .cache import Cache
+from .playlist import Playlist
 
 
 class SpotifyClient:
     def __init__(self, cache_dir: str = None):
         self._connection = Connection()
         self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
-        # TODO initialise playlists
+        self._playlists = None
 
     async def play(self, context_uri: str = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
         """
@@ -102,3 +103,47 @@ class SpotifyClient:
         """
         endpoint = "me/player"
         await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
+
+    async def fetch_user(self) -> None:
+        """
+        fetch playlists and albums of current user
+        """
+        offset = 0
+        limit = 50
+        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(id,name)")
+
+        data = await self._connection.make_get_request(endpoint=endpoint)
+
+        # check for long data that needs paging
+        if data["next"] is not None:
+            while True:
+                offset += limit
+                endpoint = self._connection.add_parameters_to_endpoint(
+                    "me/playlists",
+                    fields="items(id,name)",
+                    offset=offset,
+                    limit=limit
+                )
+                extra_data = await self._connection.make_get_request(endpoint)
+                data["items"] += extra_data["items"]
+
+                if extra_data["next"] is None:
+                    break
+
+        self._playlists = []
+        for playlist in data["items"]:
+            self._playlists.append(self._cache.get_playlist(p_id=playlist["id"], name=playlist["name"]))
+
+        # TODO add album fetch
+
+    async def user_playlists(self) -> List[Playlist]:
+        """
+        get playlists of current user
+        :return: list of playlists saved in the user profile
+        """
+        if self._playlists is None:
+            await self.fetch_user()
+
+        return self._playlists.copy()
+
+# TODO add album and episode support
