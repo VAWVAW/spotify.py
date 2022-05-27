@@ -1,24 +1,19 @@
-import os
-import json
-
 from typing import List
 
 from .connection import Connection
 from .cache import Cache
 from .uri import URI
+from .cacheable import Cacheable
 
 
-class Track:
-    def __init__(self, uri: URI, connection: Connection, cache: Cache, name: str = None):
-        self._uri = uri
-        self._connection = connection
-        self._cache = cache
-        self._name = name
+class Track(Cacheable):
+    def __init__(self, uri: URI, cache: Cache, name: str = None):
+        super().__init__(uri=uri, cache=cache, name=name)
 
         self._album = None
         self._artists = None
 
-    async def __dict__(self):
+    async def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "name": self._name,
@@ -27,61 +22,28 @@ class Track:
         }
 
     @staticmethod
-    async def _make_request(t_id: str, connection: Connection) -> dict:
+    async def make_request(uri: URI, connection: Connection) -> dict:
         endpoint = connection.add_parameters_to_endpoint(
             "tracks/{id}",
             fields="uri,name,album(id,uri,name),artists(id,uri,name)",
         )
+        return await connection.make_get_request(endpoint, id=uri.id)
 
-        data = await connection.make_get_request(endpoint, id=t_id)
-        return data
+    def load_dict(self, data: dict):
+        assert str(self._uri) == dict["uri"]
 
-    async def _cache_self(self):
-        path = os.path.join(self._cache.cache_dir, "tracks", str(self.uri))
-        with open(path, "w") as out_file:
-            json.dump(await self.__dict__(), out_file)
-
-    async def _load_laizy(self):
-        cache_after = False
-        # try to load from cache
-        if self._cache.cache_dir is not None:
-            path = os.path.join(self._cache.cache_dir, "tracks", str(self.uri))
-            try:
-                # load from cache
-                with open(path, "r") as in_file:
-                    data = json.load(in_file)
-            except FileNotFoundError:
-                # request new data
-                data = await self._make_request(t_id=self._uri.id, connection=self._connection)
-        else:
-            data = await self._make_request(t_id=self._uri.id, connection=self._connection)
-
-        self._uri = data["uri"]
         self._name = data["name"]
         self._album = data["album"]
         self._artists = data["artists"]
 
-        if cache_after:
-            await self._cache_self()
-
-    @property
-    async def uri(self) -> URI:
-        return self._uri
-
-    @property
-    async def name(self) -> str:
-        if self._name is None:
-            await self._load_laizy()
-        return self._name
-
     @property
     async def album(self) -> dict:
         if self._album is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._album
 
     @property
     async def artists(self) -> List[dict]:
         if self._artists is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._artists

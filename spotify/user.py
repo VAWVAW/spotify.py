@@ -1,20 +1,31 @@
-from .connection import Connection
 from .cache import Cache
 from .uri import URI
+from .cacheable import Cacheable
+from .connection import Connection
 
 
-class User:
-    def __init__(self, uri: URI, connection: Connection, cache: Cache, display_name: str = None):
-        self._uri = uri
-        self._connection = connection
-        self._cache = cache
-        self._display_name = display_name
+class User(Cacheable):
+    def __init__(self, uri: URI, cache: Cache, display_name: str = None):
+        super().__init__(uri=uri, cache=cache, name=display_name)
 
-    def __dict__(self):
+    def to_dict(self) -> dict:
         return {
-            "display_name": self._display_name,
+            "display_name": self._name,
             "uri": str(self._uri)
-            }
+        }
+
+    def load_dict(self, data: dict):
+        assert str(self._uri) == data["uri"]
+
+        self._name = data["display_name"]
+
+    @staticmethod
+    async def make_request(uri: URI, connection: Connection) -> dict:
+        endpoint = connection.add_parameters_to_endpoint(
+            "users/{user_id}",
+            fields="display_name,uri"
+        )
+        return await connection.make_get_request(endpoint, user_id=uri.id)
 
     @property
     def uri(self) -> URI:
@@ -22,4 +33,6 @@ class User:
 
     @property
     def display_name(self) -> str:
-        return self._display_name
+        if self._name is None:
+            self._cache.load(self.uri)
+        return self._name

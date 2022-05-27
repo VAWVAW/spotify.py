@@ -1,6 +1,3 @@
-import json
-import os
-
 from typing import List
 
 from .connection import Connection
@@ -8,14 +5,12 @@ from .user import User
 from .track import Track
 from .cache import Cache
 from .uri import URI
+from .cacheable import Cacheable
 
 
-class Playlist:
-    def __init__(self, uri: URI, connection: Connection, cache: Cache, name: str = None):
-        self._uri = uri
-        self._connection = connection
-        self._cache = cache
-        self._name = name
+class Playlist(Cacheable):
+    def __init__(self, uri: URI, cache: Cache, name: str = None):
+        super().__init__(uri=uri, cache=cache, name=name)
 
         self._description = None
         self._owner = None
@@ -23,11 +18,11 @@ class Playlist:
         self._public = None
         self._items = None
 
-    async def __dict__(self):
+    async def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "description": self._description,
-            "owner": self._owner.__dict__(),
+            "owner": self._owner.to_dict(),
             "snapshot_id": self._snapshot_id,
             "name": self._name,
             "public": self._public,
@@ -46,7 +41,8 @@ class Playlist:
         }
 
     @staticmethod
-    async def _make_request(p_id: str, connection: Connection) -> dict:
+    async def make_request(uri: URI, connection: Connection) -> dict:
+        assert uri.type == "playlist"
         offset = 0
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
@@ -56,7 +52,7 @@ class Playlist:
             limit=limit
         )
 
-        data = await connection.make_get_request(endpoint, playlist_id=p_id)
+        data = await connection.make_get_request(endpoint, playlist_id=uri.id)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
@@ -68,7 +64,7 @@ class Playlist:
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_get_request(endpoint, playlist_id=p_id)
+                extra_data = await connection.make_get_request(endpoint, playlist_id=uri.id)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -76,29 +72,9 @@ class Playlist:
 
         return data
 
-    async def _cache_self(self):
-        path = os.path.join(self._cache.cache_dir, "playlists", str(self._uri))
-        with open(path, "w") as out_file:
-            json.dump(await self.__dict__(), out_file)
+    def load_dict(self, data: dict):
+        assert str(self._uri) == dict["uri"]
 
-    async def _load_laizy(self):
-        cache_after = False
-        # try to load from cache
-        if self._cache.cache_dir is not None:
-            path = os.path.join(self._cache.cache_dir, "playlists", str(self._uri))
-            try:
-                # load from cache
-                with open(path, "r") as in_file:
-                    data = json.load(in_file)
-            except (FileNotFoundError, json.JSONDecodeError):
-                # request new data
-                data = await self._make_request(p_id=self._uri.id, connection=self._connection)
-                cache_after = True
-        else:
-            data = await self._make_request(p_id=self._uri.id, connection=self._connection)
-            cache_after = True
-
-        self._uri = data["uri"]
         self._name = data["name"]
         self._snapshot_id = data["snapshot_id"]
         self._description = data["description"]
@@ -113,52 +89,39 @@ class Playlist:
                 "added_at": track_to_add["added_at"]
             })
 
-        if cache_after:
-            await self._cache_self()
-
-    @property
-    async def uri(self) -> URI:
-        return self._uri
-
-    @property
-    async def name(self) -> str:
-        if self._name is None:
-            await self._load_laizy()
-        return self._name
-
     @property
     async def description(self) -> str:
         if self._description is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._description
 
     @property
     async def owner(self) -> User:
         if self._owner is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._owner
 
     @property
     async def snapshot_id(self) -> str:
         if self._snapshot_id is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._snapshot_id
 
     @property
     async def public(self) -> bool:
         if self._public is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._public
 
     @property
     async def items(self) -> List[Track]:
         if self._items is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         return self._items
 
     async def search(self, *strings: str) -> List[Track]:
         if self._items is None:
-            await self._load_laizy()
+            await self._cache.load(uri=self._uri)
         results = []
         strings = [string.lower() for string in strings]
         for item in self._items:
