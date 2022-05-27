@@ -1,16 +1,18 @@
 import json
 
+from typing import List
+
 from .connection import Connection
+from .cache import Cache
 
 
 class SpotifyClient:
     def __init__(self, cache_dir: str = None):
-        self._cache_dir = cache_dir
         self._connection = Connection()
-        self._playlists = []
+        self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
         #TODO initialise playlists
 
-    async def play(self, context_uri: str = None, offset: int = None, position_ms: int = None, device_id: str = None):
+    async def play(self, context_uri: str = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
         """
         resume playback or play specified resource\n\n
         examples:\n
@@ -38,7 +40,7 @@ class SpotifyClient:
             # play specified resource
             await self._connection.make_put_request(endpoint=endpoint, data=json.dumps(data))
 
-    async def pause(self, device_id: str = None):
+    async def pause(self, device_id: str = None) -> None:
         """
         pause playback
 
@@ -50,7 +52,7 @@ class SpotifyClient:
 
         await self._connection.make_put_request(endpoint=endpoint)
 
-    async def set_playback_shuffle(self, state: bool = True, device_id: str = None):
+    async def set_playback_shuffle(self, state: bool = True, device_id: str = None) -> None:
         """
         set shuffle mode on the specified device
 
@@ -63,7 +65,7 @@ class SpotifyClient:
 
         await self._connection.make_put_request(endpoint=endpoint)
 
-    async def add_to_queue(self, uri: str, device_id: str = None):
+    async def add_to_queue(self, uri: str, device_id: str = None) -> None:
         """
         add uri to queue \n\n
         example: \n
@@ -78,13 +80,13 @@ class SpotifyClient:
 
         await self._connection.make_post_request(endpoint=endpoint)
 
-    async def close(self):
+    async def close(self) -> None:
         """
         clean sesion and exit
         """
         await self._connection.close()
 
-    async def get_devices(self) -> list:
+    async def get_devices(self) -> List[dict]:
         """
         return a list of all devices registered in spotify connect
         """
@@ -92,7 +94,7 @@ class SpotifyClient:
         data = await self._connection.make_get_request(endpoint=endpoint)
         return data["devices"]
 
-    async def transfer_playback(self, device_id: str, play: bool = False):
+    async def transfer_playback(self, device_id: str, play: bool = False) -> None:
         """
         transfer playback to new device
         :param device_id: id of targeted device
@@ -100,7 +102,3 @@ class SpotifyClient:
         """
         endpoint = "me/player"
         await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
-
-    @property
-    async def playlists(self):
-        return self._playlists

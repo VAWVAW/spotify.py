@@ -1,12 +1,13 @@
 from .connection import Connection
+from .cache import Cache
 
 
 class User:
-    def __init__(self, id: str, connection: Connection, cache_dir: str = None, display_name: str = None):
-        self._id = id
-        self._uri = "spotify:user:" + id
+    def __init__(self, u_id: str, connection: Connection, cache: Cache, display_name: str = None):
+        self._id = u_id
+        self._uri = "spotify:user:" + u_id
         self._connection = connection
-        self._cache_dir = cache_dir
+        self._cache = cache
         self._display_name = display_name
 
     def __dict__(self):

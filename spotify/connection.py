@@ -1,5 +1,3 @@
-from typing import Any
-
 import aiohttp
 import asyncio
 import json

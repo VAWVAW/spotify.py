@@ -1,17 +1,20 @@
 import json
 import os
 
+from typing import List
+
 from .connection import Connection
 from .user import User
 from .track import Track
+from .cache import Cache
 
 
 class Playlist:
-    def __init__(self, id: str, connection: Connection, cache_dir: str = None, name: str = None):
-        self._id = id
-        self._uri = "spotify:playlist:" + id
+    def __init__(self, p_id: str, connection: Connection, cache: Cache, name: str = None):
+        self._id = p_id
+        self._uri = "spotify:playlist:" + p_id
         self._connection = connection
-        self._cache_dir = cache_dir
+        self._cache = cache
         self._name = name
 
         self._description = None
@@ -30,12 +33,21 @@ class Playlist:
             "name": self._name,
             "public": self._public,
             "tracks": {
-                "items": [{"added_at": item["added_at"], "track": {"id": await item["track"].id, "name": await item["track"].name}} for item in self._items if item["track"] is not None]
+                "items": [
+                    {
+                        "added_at": item["added_at"],
+                        "track":{
+                            "id": await item["track"].id,
+                            "name": await item["track"].name
+                        }
+                    }
+                    for item in self._items
+                ]
             }
         }
 
     @staticmethod
-    async def _make_request(id: str, connection: Connection) -> dict:
+    async def _make_request(p_id: str, connection: Connection) -> dict:
         offset = 0
         limit = 100
         endpoint = connection.add_parametrs_to_endpoint(
@@ -45,7 +57,7 @@ class Playlist:
             limit=limit
         )
 
-        data = await connection.make_get_request(endpoint, playlist_id=id)
+        data = await connection.make_get_request(endpoint, playlist_id=p_id)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
@@ -57,7 +69,7 @@ class Playlist:
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_get_request(endpoint, playlist_id=id)
+                extra_data = await connection.make_get_request(endpoint, playlist_id=p_id)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -66,25 +78,25 @@ class Playlist:
         return data
 
     async def _cache_self(self):
-        path = os.path.join(self._cache_dir, "playlists", self._id)
+        path = os.path.join(self._cache.cache_dir, "playlists", self._id)
         with open(path, "w") as out_file:
             json.dump(await self.__dict__(), out_file)
 
     async def _load_laizy(self):
         cache_after = False
         # try to load from cache
-        if self._cache_dir is not None:
-            path = os.path.join(self._cache_dir, "playlists", self._id)
+        if self._cache.cache_dir is not None:
+            path = os.path.join(self._cache.cache_dir, "playlists", self._id)
             try:
                 # load from cache
                 with open(path, "r") as in_file:
                     data = json.load(in_file)
             except (FileNotFoundError, json.JSONDecodeError):
                 # request new data
-                data = await self._make_request(id=self._id, connection=self._connection)
+                data = await self._make_request(p_id=self._id, connection=self._connection)
                 cache_after = True
         else:
-            data = await self._make_request(id=self._id, connection=self._connection)
+            data = await self._make_request(p_id=self._id, connection=self._connection)
             cache_after = True
 
         self._uri = data["uri"]
@@ -92,13 +104,13 @@ class Playlist:
         self._snapshot_id = data["snapshot_id"]
         self._description = data["description"]
         self._public = data["public"]
-        self._owner = User(id=data["owner"]["id"], display_name=data["owner"]["display_name"], connection=self._connection, cache_dir=self._cache_dir)
+        self._owner = self._cache.get_user(u_id=data["owner"]["id"], display_name=data["owner"]["display_name"])
         self._items = []
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
             self._items.append({
-                "track": Track(id=track_to_add["track"]["id"], name=track_to_add["track"]["name"], connection=self._connection, cache_dir=self._cache_dir),
+                "track": self._cache.get_track(t_id=track_to_add["track"]["id"], name=track_to_add["track"]["name"]),
                 "added_at": track_to_add["added_at"]
             })
 
@@ -144,12 +156,12 @@ class Playlist:
         return self._public
 
     @property
-    async def items(self) -> list:
+    async def items(self) -> List[Track]:
         if self._items is None:
             await self._load_laizy()
         return self._items
 
-    async def search(self, *strings: str) -> list:
+    async def search(self, *strings: str) -> List[Track]:
         if self._items is None:
             await self._load_laizy()
         resutlts = []
