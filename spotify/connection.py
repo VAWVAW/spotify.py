@@ -8,16 +8,17 @@ from .errors import NotModified, BadRequestException, InvalidTokenException, For
 class Connection:
     def __init__(self):
         self.session = aiohttp.ClientSession()
+        self._token = None
 
     def _set_token(self, token: str):
-        self.token = token
+        self._token = token
 
     def _get_header(self) -> dict:
         return {
             "Accept": "application/json",
             "Content-Type": "application/json",
             "Authorization":
-                "Bearer " + self.token
+                "Bearer " + self._token
         }
 
     @staticmethod
