@@ -6,6 +6,8 @@ from typing import List
 from .connection import Connection
 from .cache import Cache
 from .playlist import Playlist
+from .track import Track
+from .user import User
 
 
 class SpotifyClient:
@@ -176,5 +178,26 @@ class SpotifyClient:
             await self.load_user()
 
         return self._playlists.copy()
+
+    async def get_playlist(self, p_id: str) -> Playlist:
+        """
+        retrun Playlist object for the given id
+        :param p_id: id of the playlist
+        """
+        return self._cache.get_playlist(p_id=p_id)
+
+    async def get_track(self, t_id: str) -> Track:
+        """
+        retrun Track object for the given id
+        :param t_id: id of the track
+        """
+        return self._cache.get_track(t_id=t_id)
+
+    async def get_user(self, u_id: str) -> User:
+        """
+        retrun User object for the given id
+        :param u_id: id of the user
+        """
+        return self._cache.get_user(u_id=u_id)
 
 # TODO add album and episode support
