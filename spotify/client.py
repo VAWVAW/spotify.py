@@ -107,7 +107,7 @@ class SpotifyClient:
 
     async def __dict__(self) -> dict:
         return {
-            "playlists": [{"id": await playlist.id, "name": await playlist.name} for playlist in self._playlists]
+            "playlists": {"items": [{"id": await playlist.id, "name": await playlist.name} for playlist in self._playlists]}
         }
 
     async def _cache_self(self):
@@ -162,7 +162,7 @@ class SpotifyClient:
 
         self._playlists = []
         for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(p_id=playlist["playlists"]["id"], name=playlist["playlists"]["name"]))
+            self._playlists.append(self._cache.get_playlist(p_id=playlist["id"], name=playlist["name"]))
 
         if cache_after:
             await self._cache_self()

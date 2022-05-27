@@ -32,3 +32,8 @@ class Cache:
         if u_id not in self._users.keys():
             self._users[u_id] = User(u_id=u_id, connection=self._connection, cache=self, display_name=display_name)
         return self._users[u_id]
+
+
+from .playlist import Playlist
+from .user import User
+from .track import Track
