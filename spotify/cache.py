@@ -1,6 +1,5 @@
-from .playlist import Playlist
-from .track import Track
-from .user import User
+from __future__ import annotations
+
 from .connection import Connection
 
 
