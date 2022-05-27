@@ -8,6 +8,7 @@ from .cache import Cache
 from .playlist import Playlist
 from .track import Track
 from .user import User
+from .uri import URI
 
 
 class SpotifyClient:
@@ -164,7 +165,7 @@ class SpotifyClient:
 
         self._playlists = []
         for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(p_id=playlist["id"], name=playlist["name"]))
+            self._playlists.append(self._cache.get_playlist(uri=playlist["uri"], name=playlist["name"]))
 
         if cache_after:
             await self._cache_self()
@@ -179,26 +180,26 @@ class SpotifyClient:
 
         return self._playlists.copy()
 
-    async def get_playlist(self, p_id: str) -> Playlist:
+    async def get_playlist(self, uri: URI) -> Playlist:
         """
-        retrun Playlist object for the given id
-        :param p_id: id of the playlist
+        return Playlist object for the given id
+        :param uri: uri of the playlist
         """
-        return self._cache.get_playlist(p_id=p_id)
+        return self._cache.get_playlist(uri=uri)
 
-    async def get_track(self, t_id: str) -> Track:
+    async def get_track(self, uri: URI) -> Track:
         """
-        retrun Track object for the given id
-        :param t_id: id of the track
+        return Track object for the given id
+        :param uri: uri of the track
         """
-        return self._cache.get_track(t_id=t_id)
+        return self._cache.get_track(uri=uri)
 
-    async def get_user(self, u_id: str) -> User:
+    async def get_user(self, uri: URI) -> User:
         """
-        retrun User object for the given id
-        :param u_id: id of the user
+        return User object for the given id
+        :param uri: uri of the user
         """
-        return self._cache.get_user(u_id=u_id)
+        return self._cache.get_user(uri=uri)
 
     async def get_playing(self) -> dict:
         """

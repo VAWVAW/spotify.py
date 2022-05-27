@@ -30,6 +30,7 @@ from .playlist import *
 from .track import *
 from .user import *
 from .cache import *
+from .uri import *
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

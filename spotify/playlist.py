@@ -7,12 +7,12 @@ from .connection import Connection
 from .user import User
 from .track import Track
 from .cache import Cache
+from .uri import URI
 
 
 class Playlist:
-    def __init__(self, p_id: str, connection: Connection, cache: Cache, name: str = None):
-        self._id = p_id
-        self._uri = "spotify:playlist:" + p_id
+    def __init__(self, uri: URI, connection: Connection, cache: Cache, name: str = None):
+        self._uri = uri
         self._connection = connection
         self._cache = cache
         self._name = name
@@ -25,8 +25,7 @@ class Playlist:
 
     async def __dict__(self):
         return {
-            "id": self._id,
-            "uri": self._uri,
+            "uri": str(self._uri),
             "description": self._description,
             "owner": self._owner.__dict__(),
             "snapshot_id": self._snapshot_id,
@@ -78,7 +77,7 @@ class Playlist:
         return data
 
     async def _cache_self(self):
-        path = os.path.join(self._cache.cache_dir, "playlists", self._id)
+        path = os.path.join(self._cache.cache_dir, "playlists", str(self._uri))
         with open(path, "w") as out_file:
             json.dump(await self.__dict__(), out_file)
 
@@ -86,17 +85,17 @@ class Playlist:
         cache_after = False
         # try to load from cache
         if self._cache.cache_dir is not None:
-            path = os.path.join(self._cache.cache_dir, "playlists", self._id)
+            path = os.path.join(self._cache.cache_dir, "playlists", str(self._uri))
             try:
                 # load from cache
                 with open(path, "r") as in_file:
                     data = json.load(in_file)
             except (FileNotFoundError, json.JSONDecodeError):
                 # request new data
-                data = await self._make_request(p_id=self._id, connection=self._connection)
+                data = await self._make_request(p_id=self._uri.id, connection=self._connection)
                 cache_after = True
         else:
-            data = await self._make_request(p_id=self._id, connection=self._connection)
+            data = await self._make_request(p_id=self._uri.id, connection=self._connection)
             cache_after = True
 
         self._uri = data["uri"]
@@ -104,13 +103,13 @@ class Playlist:
         self._snapshot_id = data["snapshot_id"]
         self._description = data["description"]
         self._public = data["public"]
-        self._owner = self._cache.get_user(u_id=data["owner"]["id"], display_name=data["owner"]["display_name"])
+        self._owner = self._cache.get_user(uri=data["owner"]["uri"], display_name=data["owner"]["display_name"])
         self._items = []
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
             self._items.append({
-                "track": self._cache.get_track(t_id=track_to_add["track"]["id"], name=track_to_add["track"]["name"]),
+                "track": self._cache.get_track(uri=track_to_add["track"]["uri"], name=track_to_add["track"]["name"]),
                 "added_at": track_to_add["added_at"]
             })
 
@@ -118,11 +117,7 @@ class Playlist:
             await self._cache_self()
 
     @property
-    async def id(self) -> str:
-        return self._id
-
-    @property
-    async def uri(self) -> str:
+    async def uri(self) -> URI:
         return self._uri
 
     @property

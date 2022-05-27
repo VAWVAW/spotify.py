@@ -5,12 +5,12 @@ from typing import List
 
 from .connection import Connection
 from .cache import Cache
+from .uri import URI
 
 
 class Track:
-    def __init__(self, t_id: str, connection: Connection, cache: Cache, name: str = None):
-        self._id = t_id
-        self._uri = "spotify:track:" + t_id
+    def __init__(self, uri: URI, connection: Connection, cache: Cache, name: str = None):
+        self._uri = uri
         self._connection = connection
         self._cache = cache
         self._name = name
@@ -20,8 +20,7 @@ class Track:
 
     async def __dict__(self):
         return {
-            "id": self._id,
-            "uri": self._uri,
+            "uri": str(self._uri),
             "name": self._name,
             "album": self._album,
             "artists": self._artists
@@ -38,7 +37,7 @@ class Track:
         return data
 
     async def _cache_self(self):
-        path = os.path.join(self._cache.cache_dir, "tracks", self._id)
+        path = os.path.join(self._cache.cache_dir, "tracks", str(self.uri))
         with open(path, "w") as out_file:
             json.dump(await self.__dict__(), out_file)
 
@@ -46,16 +45,16 @@ class Track:
         cache_after = False
         # try to load from cache
         if self._cache.cache_dir is not None:
-            path = os.path.join(self._cache.cache_dir, "tracks", self._id)
+            path = os.path.join(self._cache.cache_dir, "tracks", str(self.uri))
             try:
                 # load from cache
                 with open(path, "r") as in_file:
                     data = json.load(in_file)
             except FileNotFoundError:
                 # request new data
-                data = await self._make_request(t_id=self._id, connection=self._connection)
+                data = await self._make_request(t_id=self._uri.id, connection=self._connection)
         else:
-            data = await self._make_request(t_id=self._id, connection=self._connection)
+            data = await self._make_request(t_id=self._uri.id, connection=self._connection)
 
         self._uri = data["uri"]
         self._name = data["name"]
@@ -66,11 +65,7 @@ class Track:
             await self._cache_self()
 
     @property
-    async def id(self) -> str:
-        return self._id
-
-    @property
-    async def uri(self) -> str:
+    async def uri(self) -> URI:
         return self._uri
 
     @property
