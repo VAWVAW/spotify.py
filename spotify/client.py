@@ -1,12 +1,12 @@
 import json
 
-import connection
+from .connection import Connection
 
 
 class SpotifyClient:
     def __init__(self, cache_dir: str = None):
         self._cache_dir = cache_dir
-        self._connection = connection.Connection()
+        self._connection = Connection()
         self._playlists = []
         #TODO initialise playlists
 

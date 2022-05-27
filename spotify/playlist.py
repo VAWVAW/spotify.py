@@ -2,13 +2,13 @@ import json
 import asyncio
 import os
 
-import connection
-import user
-import track
+from .connection import Connection
+from .user import User
+from .track import Track
 
 
 class Playlist:
-    def __init__(self, id: str, connection: connection.Connection, cache_dir: str = None, name: str = None):
+    def __init__(self, id: str, connection: Connection, cache_dir: str = None, name: str = None):
         self._id = id
         self._uri = "spotify:playlist:" + id
         self._connection = connection
@@ -36,7 +36,7 @@ class Playlist:
         }
 
     @staticmethod
-    async def _make_request(id: str, connection: connection.Connection) -> dict:
+    async def _make_request(id: str, connection: Connection) -> dict:
         offset = 0
         limit = 100
         endpoint = connection.add_parametrs_to_endpoint(
@@ -93,13 +93,13 @@ class Playlist:
         self._snapshot_id = data["snapshot_id"]
         self._description = data["description"]
         self._public = data["public"]
-        self._owner = user.User(id=data["owner"]["id"], display_name=data["owner"]["display_name"], connection=self._connection, cache_dir=self._cache_dir)
+        self._owner = User(id=data["owner"]["id"], display_name=data["owner"]["display_name"], connection=self._connection, cache_dir=self._cache_dir)
         self._items = []
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
             self._items.append({
-                "track": track.Track(id=track_to_add["track"]["id"], name=track_to_add["track"]["name"], connection=self._connection, cache_dir=self._cache_dir),
+                "track": Track(id=track_to_add["track"]["id"], name=track_to_add["track"]["name"], connection=self._connection, cache_dir=self._cache_dir),
                 "added_at": track_to_add["added_at"]
             })
 
@@ -127,7 +127,7 @@ class Playlist:
         return self._description
 
     @property
-    async def owner(self) -> user.User:
+    async def owner(self) -> User:
         if self._owner is None:
             await self._load_laizy()
         return self._owner

@@ -4,7 +4,7 @@ import aiohttp
 import asyncio
 import json
 
-import errors
+from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError
 
 
 class Connection:
@@ -29,25 +29,25 @@ class Connection:
                 # no content
                 return None
             case 304:
-                raise errors.NotModified(await response.text())
+                raise NotModified(await response.text())
             case 400:
-                raise errors.BadRequestException(json.loads(await response.text()))
+                raise BadRequestException(json.loads(await response.text()))
             case 401:
-                raise errors.InvalidTokenException(json.loads(await response.text()))
+                raise InvalidTokenException(json.loads(await response.text()))
             case 403:
-                raise errors.ForbiddenException(json.loads(await response.text()))
+                raise ForbiddenException(json.loads(await response.text()))
             case 404:
-                raise errors.NotFoundException(json.loads(await response.text()))
+                raise NotFoundException(json.loads(await response.text()))
             case 429:
                 # rate limit
                 await asyncio.sleep(5)
-                raise errors.Retry()
+                raise Retry()
             case 500:
-                raise errors.InternalServerError(await response.text())
+                raise InternalServerError(await response.text())
             case 503:
                 # service unavailable
                 await asyncio.sleep(1)
-                raise errors.Retry()
+                raise Retry()
 
         try:
             return json.loads(await response.text())
@@ -59,7 +59,7 @@ class Connection:
 
         try:
             data = await self._evaluate_response(response)
-        except errors.Retry:
+        except Retry:
             data = await self.make_get_request(endpoint=endpoint, **formats)
 
         return data
@@ -69,7 +69,7 @@ class Connection:
 
         try:
             data = await self._evaluate_response(response)
-        except errors.Retry:
+        except Retry:
             data = await self.make_post_request(data=data, endpoint=endpoint, **formats)
 
         return data
@@ -79,7 +79,7 @@ class Connection:
 
         try:
             data = await self._evaluate_response(response)
-        except errors.Retry:
+        except Retry:
             data = await self.make_post_request(data=data, endpoint=endpoint, **formats)
 
         return data

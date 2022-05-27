@@ -2,11 +2,11 @@ import os
 import json
 import asyncio
 
-import connection
+from .connection import Connection
 
 
 class Track:
-    def __init__(self, id: str, connection: connection.Connection, cache_dir: str = None, name: str = None):
+    def __init__(self, id: str, connection: Connection, cache_dir: str = None, name: str = None):
         self._id = id
         self._uri = "spotify:track:" + id
         self._connection = connection
@@ -26,7 +26,7 @@ class Track:
         }
 
     @staticmethod
-    async def _make_request(id: str, connection: connection.Connection) -> dict:
+    async def _make_request(id: str, connection: Connection) -> dict:
         endpoint = connection.add_parametrs_to_endpoint(
             "tracks/{id}",
             fields="uri,name,album(id,uri,name),artists(id,uri,name)",
