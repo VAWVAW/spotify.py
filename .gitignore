@@ -130,3 +130,5 @@ dmypy.json
 
 # PyCarm configuration
 .idea/
+
+test.py
