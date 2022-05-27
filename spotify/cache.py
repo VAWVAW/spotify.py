@@ -57,6 +57,7 @@ class Cache:
         element.load_dict(data)
 
         if cache_after:
+            path = os.path.join(self._cache_dir, str(uri))
             with open(path, "w") as out_file:
                 json.dump(element.to_dict(), out_file)
 
