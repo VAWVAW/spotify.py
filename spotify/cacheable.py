@@ -7,6 +7,7 @@ from .cache import Cache
 
 class Cacheable(ABC):
     def __init__(self, uri: URI, cache: Cache, name: str = None):
+        assert isinstance(uri, URI)
         self._uri = uri
         self._name = name
         self._cache = cache
@@ -26,7 +27,7 @@ class Cacheable(ABC):
         pass
 
     @abstractmethod
-    def to_dict(self) -> dict:
+    async def to_dict(self) -> dict:
         pass
 
     @staticmethod

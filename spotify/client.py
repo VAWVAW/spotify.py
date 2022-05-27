@@ -30,6 +30,7 @@ class SpotifyClient:
         :param device_id: device to target (leave at None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
+        assert isinstance(uri, URI)
         data = {}
         endpoint = self._connection.add_parameters_to_endpoint("me/player/play", device_id=device_id)
 
@@ -81,9 +82,9 @@ class SpotifyClient:
         :param device_id: device to target (leave at None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
+        assert isinstance(uri, URI)
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=uri)
-
         await self._connection.make_post_request(endpoint=endpoint)
 
     async def close(self) -> None:
@@ -113,7 +114,7 @@ class SpotifyClient:
         # TODO add album fetch
         offset = 0
         limit = 50
-        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(id,name)")
+        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(uri,name)")
 
         data = await self._connection.make_get_request(endpoint=endpoint)
 
@@ -123,7 +124,7 @@ class SpotifyClient:
                 offset += limit
                 endpoint = self._connection.add_parameters_to_endpoint(
                     "me/playlists",
-                    fields="items(id,name)",
+                    fields="items(uri,name)",
                     offset=offset,
                     limit=limit
                 )
@@ -152,11 +153,10 @@ class SpotifyClient:
                 cache_after = True
         else:
             data = {"playlists": await self._fetch_playlists()}
-            cache_after = True
 
         self._playlists = []
         for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(uri=playlist["uri"], name=playlist["name"]))
+            self._playlists.append(self._cache.get_playlist(uri=URI(playlist["uri"]), name=playlist["name"]))
 
         if cache_after:
             pass
@@ -178,6 +178,8 @@ class SpotifyClient:
         return Playlist object for the given id
         :param uri: uri of the playlist
         """
+        assert isinstance(uri, URI)
+
         return self._cache.get_playlist(uri=uri)
 
     async def get_track(self, uri: URI) -> Track:
@@ -185,6 +187,8 @@ class SpotifyClient:
         return Track object for the given id
         :param uri: uri of the track
         """
+        assert isinstance(uri, URI)
+
         return self._cache.get_track(uri=uri)
 
     async def get_user(self, uri: URI) -> User:
@@ -192,6 +196,8 @@ class SpotifyClient:
         return User object for the given id
         :param uri: uri of the user
         """
+        assert isinstance(uri, URI)
+
         return self._cache.get_user(uri=uri)
 
     async def get_playing(self) -> dict:

@@ -31,7 +31,7 @@ class Playlist(Cacheable):
                     {
                         "added_at": item["added_at"],
                         "track":{
-                            "id": await item["track"].id,
+                            "uri": str(await item["track"].uri),
                             "name": await item["track"].name
                         }
                     }
@@ -47,7 +47,7 @@ class Playlist(Cacheable):
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
             "playlists/{playlist_id}",
-            fields="uri,description,name,owner(id,display_name),snapshot_id,public,tracks(next,items(added_at,track(id,name,uri)))",
+            fields="uri,description,name,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri)))",
             offset=offset,
             limit=limit
         )
@@ -60,7 +60,7 @@ class Playlist(Cacheable):
                 offset += limit
                 endpoint = connection.add_parameters_to_endpoint(
                     "playlists/{playlist_id}/tracks",
-                    fields="next,items(added_at,track(id,name,uri))",
+                    fields="next,items(added_at,track(name,uri))",
                     offset=offset,
                     limit=limit
                 )
@@ -73,19 +73,19 @@ class Playlist(Cacheable):
         return data
 
     def load_dict(self, data: dict):
-        assert str(self._uri) == dict["uri"]
+        assert str(self._uri) == data["uri"]
 
         self._name = data["name"]
         self._snapshot_id = data["snapshot_id"]
         self._description = data["description"]
         self._public = data["public"]
-        self._owner = self._cache.get_user(uri=data["owner"]["uri"], display_name=data["owner"]["display_name"])
+        self._owner = self._cache.get_user(uri=URI(data["owner"]["uri"]), display_name=data["owner"]["display_name"])
         self._items = []
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
             self._items.append({
-                "track": self._cache.get_track(uri=track_to_add["track"]["uri"], name=track_to_add["track"]["name"]),
+                "track": self._cache.get_track(uri=URI(track_to_add["track"]["uri"]), name=track_to_add["track"]["name"]),
                 "added_at": track_to_add["added_at"]
             })
 

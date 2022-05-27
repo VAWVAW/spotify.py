@@ -5,6 +5,7 @@ import json
 import os.path
 
 from .connection import Connection
+from .uri import URI
 
 
 class Cache:
@@ -31,13 +32,15 @@ class Cache:
     def get_element(self, uri: URI, name: str = None) -> Cacheable:
         if str(uri) not in self._by_uri.keys():
             # generate element based on type in uri
-            to_add = self._datatypes[uri.type](uri=uri, connection=self._connection, cache=self, name=name)
+            to_add = self._datatypes[uri.type](uri=uri, cache=self, name=name)
             self._by_uri[str(uri)] = to_add
             self._by_type[uri.type][str(uri)] = to_add
 
         return self._by_uri[str(uri)]
 
     async def load(self, uri: URI):
+        assert isinstance(uri, URI)
+
         element = self.get_element(uri)
         cache_after = False
 
@@ -59,22 +62,34 @@ class Cache:
         if cache_after:
             path = os.path.join(self._cache_dir, str(uri))
             with open(path, "w") as out_file:
-                json.dump(element.to_dict(), out_file)
+                json.dump(await element.to_dict(), out_file)
 
     # get cached objects and create them if needed
     def get_track(self, uri: URI, name: str = None) -> Track:
+        assert isinstance(uri, URI)
+
         if uri not in self._by_type["track"].keys():
-            self._by_type["track"][str(uri)] = Track(uri=uri, cache=self, name=name)
+            to_add = Track(uri=uri, cache=self, name=name)
+            self._by_type["track"][str(uri)] = to_add
+            self._by_uri[str(uri)] = to_add
         return self._by_type["track"][str(uri)]
 
     def get_playlist(self, uri: URI, name: str = None) -> Playlist:
+        assert isinstance(uri, URI)
+
         if uri not in self._by_type["playlist"].keys():
-            self._by_type["playlist"][uri] = Playlist(uri=uri, cache=self, name=name)
+            to_add = Playlist(uri=uri, cache=self, name=name)
+            self._by_type["playlist"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
         return self._by_type["playlist"][uri]
 
     def get_user(self, uri: URI, display_name: str = None) -> User:
+        assert isinstance(uri, URI)
+
         if uri not in self._by_type["user"].keys():
-            self._by_type["user"][uri] = User(uri=uri, cache=self, display_name=display_name)
+            to_add = User(uri=uri, cache=self, display_name=display_name)
+            self._by_type["user"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
         return self._by_type["user"][uri]
 
 
