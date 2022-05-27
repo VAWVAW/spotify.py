@@ -8,6 +8,8 @@ from .cache import Cache
 class Cacheable(ABC):
     def __init__(self, uri: URI, cache: Cache, name: str = None):
         assert isinstance(uri, URI)
+        assert isinstance(cache, Cache)
+        assert isinstance(name, (str | None))
         self._uri = uri
         self._name = name
         self._cache = cache

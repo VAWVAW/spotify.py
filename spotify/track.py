@@ -23,6 +23,9 @@ class Track(Cacheable):
 
     @staticmethod
     async def make_request(uri: URI, connection: Connection) -> dict:
+        assert isinstance(uri, URI)
+        assert isinstance(connection, Connection)
+
         endpoint = connection.add_parameters_to_endpoint(
             "tracks/{id}",
             fields="uri,name,album(id,uri,name),artists(id,uri,name)",
@@ -30,6 +33,7 @@ class Track(Cacheable):
         return await connection.make_get_request(endpoint, id=uri.id)
 
     def load_dict(self, data: dict):
+        assert isinstance(data, dict)
         assert str(self._uri) == dict["uri"]
 
         self._name = data["name"]

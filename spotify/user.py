@@ -15,12 +15,16 @@ class User(Cacheable):
         }
 
     def load_dict(self, data: dict):
+        assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
 
         self._name = data["display_name"]
 
     @staticmethod
     async def make_request(uri: URI, connection: Connection) -> dict:
+        assert isinstance(uri, URI)
+        assert isinstance(connection, Connection)
+
         endpoint = connection.add_parameters_to_endpoint(
             "users/{user_id}",
             fields="display_name,uri"

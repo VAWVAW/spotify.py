@@ -30,7 +30,11 @@ class SpotifyClient:
         :param device_id: device to target (leave at None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
-        assert isinstance(uri, URI)
+        assert isinstance(uri, (URI | None))
+        assert isinstance(offset, (int | None))
+        assert isinstance(position_ms, (int | None))
+        assert isinstance(device_id, (str | None))
+
         data = {}
         endpoint = self._connection.add_parameters_to_endpoint("me/player/play", device_id=device_id)
 
@@ -54,6 +58,7 @@ class SpotifyClient:
         :param device_id: device to target (leave at None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
+        assert isinstance(device_id, (str | None))
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/pause", device_id=device_id)
 
@@ -67,6 +72,8 @@ class SpotifyClient:
         :param device_id: device to target (leave at None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
+        assert isinstance(state, bool)
+        assert isinstance(device_id, (str | None))
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/shuffle", device_id=device_id, state=state)
 
@@ -83,6 +90,7 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(uri, URI)
+        assert isinstance(device_id, (str | None))
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=uri)
         await self._connection.make_post_request(endpoint=endpoint)
@@ -107,6 +115,9 @@ class SpotifyClient:
         :param device_id: id of targeted device
         :param play: whether to start playing on new device
         """
+        assert isinstance(device_id, (str | None))
+        assert isinstance(play, bool)
+
         endpoint = "me/player"
         await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 

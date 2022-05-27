@@ -42,6 +42,9 @@ class Playlist(Cacheable):
 
     @staticmethod
     async def make_request(uri: URI, connection: Connection) -> dict:
+        assert isinstance(uri, URI)
+        assert isinstance(connection, Connection)
+
         assert uri.type == "playlist"
         offset = 0
         limit = 100
@@ -73,6 +76,7 @@ class Playlist(Cacheable):
         return data
 
     def load_dict(self, data: dict):
+        assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
 
         self._name = data["name"]
@@ -120,6 +124,8 @@ class Playlist(Cacheable):
         return self._items
 
     async def search(self, *strings: str) -> List[Track]:
+        assert isinstance(strings, list)
+
         if self._items is None:
             await self._cache.load(uri=self._uri)
         results = []
