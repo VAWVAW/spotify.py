@@ -17,14 +17,14 @@ class SpotifyClient:
         self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
         self._playlists = None
 
-    async def play(self, context_uri: str = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
+    async def play(self, uri: URI = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
         """
         resume playback or play specified resource\n\n
         examples:\n
         await SpotifyClient.play()\n
         await SpotifyClient.play(context_uri="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
 
-        :param context_uri: spotify uri to resource to play (leave at None to resume playing)
+        :param uri: spotify uri to resource to play (leave at None to resume playing)
         :param offset: number of song in resource to start playing (only used if context_uri is set)
         :param position_ms: position in song to seek (only used if context_uri is set)
         :param device_id: device to target (leave at None to use currently active device
@@ -38,11 +38,12 @@ class SpotifyClient:
         if position_ms is not None:
             data["position_ms"] = position_ms
 
-        if context_uri is None:
+        if uri is None:
             # resume whatever was playing
             await self._connection.make_put_request(endpoint=endpoint)
         else:
             # play specified resource
+            data["context_uri"] = uri
             await self._connection.make_put_request(endpoint=endpoint, data=json.dumps(data))
 
     async def pause(self, device_id: str = None) -> None:
@@ -70,7 +71,7 @@ class SpotifyClient:
 
         await self._connection.make_put_request(endpoint=endpoint)
 
-    async def add_to_queue(self, uri: str, device_id: str = None) -> None:
+    async def add_to_queue(self, uri: URI, device_id: str = None) -> None:
         """
         add uri to queue \n\n
         example: \n
@@ -107,16 +108,6 @@ class SpotifyClient:
         """
         endpoint = "me/player"
         await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
-
-    async def __dict__(self) -> dict:
-        return {
-            "playlists": {"items": [{"id": await playlist.id, "name": await playlist.name} for playlist in self._playlists]}
-        }
-
-    async def _cache_self(self):
-        path = os.path.join(self._cache.cache_dir, "user")
-        with open(path, "w") as out_file:
-            json.dump(await self.__dict__(), out_file)
 
     async def _fetch_playlists(self) -> dict:
         # TODO add album fetch
@@ -168,7 +159,9 @@ class SpotifyClient:
             self._playlists.append(self._cache.get_playlist(uri=playlist["uri"], name=playlist["name"]))
 
         if cache_after:
-            await self._cache_self()
+            pass
+            # TODO cache user playlists
+            # await self._cache_self()
 
     async def user_playlists(self) -> List[Playlist]:
         """
