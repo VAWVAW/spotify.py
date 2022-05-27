@@ -1,5 +1,4 @@
 import json
-import asyncio
 import os
 
 from .connection import Connection

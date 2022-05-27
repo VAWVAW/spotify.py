@@ -1,6 +1,5 @@
 import os
 import json
-import asyncio
 
 from .connection import Connection
 
@@ -16,7 +15,7 @@ class Track:
         self._album = None
         self._artists = None
 
-    def __dict__(self):
+    async def __dict__(self):
         return {
             "id": self._id,
             "uri": self._uri,
@@ -33,10 +32,15 @@ class Track:
         )
 
         data = await connection.make_get_request(endpoint, id=id)
-        # TODO cache data
         return data
 
+    async def _cache_self(self):
+        path = os.path.join(self._cache_dir, "tracks", self._id)
+        with open(path, "w") as out_file:
+            json.dump(await self.__dict__(), out_file)
+
     async def _load_laizy(self):
+        cache_after = False
         # try to load from cache
         if self._cache_dir is not None:
             path = os.path.join(self._cache_dir, "tracks", self._id)
@@ -54,6 +58,9 @@ class Track:
         self._name = data["name"]
         self._album = data["album"]
         self._artists = data["artists"]
+
+        if cache_after:
+            await self._cache_self()
 
     @property
     async def id(self) -> str:
