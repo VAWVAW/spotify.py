@@ -31,5 +31,5 @@ class Cacheable(ABC):
 
     @staticmethod
     @abstractmethod
-    def make_request(uri: URI, connection: Connection) -> dict:
+    async def make_request(uri: URI, connection: Connection) -> dict:
         pass

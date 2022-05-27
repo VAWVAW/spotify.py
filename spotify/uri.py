@@ -11,10 +11,10 @@ class URI:
         self._id = sts[2]
 
     @classmethod
-    def from_values(cls, type: str, id: str) -> URI:
+    def from_values(cls, datatype: str, uid: str) -> URI:
         new_uri = cls.__new__(cls)
-        new_uri._type = type
-        new_uri._id = id
+        new_uri._type = datatype
+        new_uri._id = uid
         return new_uri
 
     def __str__(self):
