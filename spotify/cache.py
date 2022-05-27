@@ -1,3 +1,4 @@
+# resolve circular dependencies
 from __future__ import annotations
 
 from .connection import Connection
