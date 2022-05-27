@@ -200,4 +200,13 @@ class SpotifyClient:
         """
         return self._cache.get_user(u_id=u_id)
 
+    async def get_playing(self) -> dict:
+        """
+        returns information to playback state
+        :return: dict with is_playing, device, repeat_state, shuffle_state, context(playlist), item(track), actions
+        """
+        endpoint = "me/player"
+
+        return await self._connection.make_get_request(endpoint=endpoint)
+
 # TODO add album and episode support
