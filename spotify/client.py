@@ -1,4 +1,5 @@
 import json
+import os
 
 from typing import List
 
@@ -104,10 +105,18 @@ class SpotifyClient:
         endpoint = "me/player"
         await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
-    async def fetch_user(self) -> None:
-        """
-        fetch playlists and albums of current user
-        """
+    async def __dict__(self) -> dict:
+        return {
+            "playlists": [{"id": await playlist.id, "name": await playlist.name} for playlist in self._playlists]
+        }
+
+    async def _cache_self(self):
+        path = os.path.join(self._cache.cache_dir, "user")
+        with open(path, "w") as out_file:
+            json.dump(await self.__dict__(), out_file)
+
+    async def _fetch_playlists(self) -> dict:
+        # TODO add album fetch
         offset = 0
         limit = 50
         endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(id,name)")
@@ -129,12 +138,34 @@ class SpotifyClient:
 
                 if extra_data["next"] is None:
                     break
+        return data
+
+    async def load_user(self) -> None:
+        """
+        load user data from cache if possible
+        """
+        cache_after = False
+        # try to load from cache
+        if self._cache.cache_dir is not None:
+            path = os.path.join(self._cache.cache_dir, "user")
+            try:
+                # load from cache
+                with open(path, "r") as in_file:
+                    data = json.load(in_file)
+            except (FileNotFoundError, json.JSONDecodeError):
+                # request new data
+                data = {"playlists": await self._fetch_playlists()}
+                cache_after = True
+        else:
+            data = {"playlists": await self._fetch_playlists()}
+            cache_after = True
 
         self._playlists = []
-        for playlist in data["items"]:
-            self._playlists.append(self._cache.get_playlist(p_id=playlist["id"], name=playlist["name"]))
+        for playlist in data["playlists"]["items"]:
+            self._playlists.append(self._cache.get_playlist(p_id=playlist["playlists"]["id"], name=playlist["playlists"]["name"]))
 
-        # TODO add album fetch
+        if cache_after:
+            await self._cache_self()
 
     async def user_playlists(self) -> List[Playlist]:
         """
@@ -142,7 +173,7 @@ class SpotifyClient:
         :return: list of playlists saved in the user profile
         """
         if self._playlists is None:
-            await self.fetch_user()
+            await self.load_user()
 
         return self._playlists.copy()
 
