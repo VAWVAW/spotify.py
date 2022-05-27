@@ -29,7 +29,7 @@ class Track:
 
     @staticmethod
     async def _make_request(t_id: str, connection: Connection) -> dict:
-        endpoint = connection.add_parametrs_to_endpoint(
+        endpoint = connection.add_parameters_to_endpoint(
             "tracks/{id}",
             fields="uri,name,album(id,uri,name),artists(id,uri,name)",
         )

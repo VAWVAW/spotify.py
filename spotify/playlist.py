@@ -50,7 +50,7 @@ class Playlist:
     async def _make_request(p_id: str, connection: Connection) -> dict:
         offset = 0
         limit = 100
-        endpoint = connection.add_parametrs_to_endpoint(
+        endpoint = connection.add_parameters_to_endpoint(
             "playlists/{playlist_id}",
             fields="uri,description,name,owner(id,display_name),snapshot_id,public,tracks(next,items(added_at,track(id,name,uri)))",
             offset=offset,
@@ -63,7 +63,7 @@ class Playlist:
         if data["tracks"]["next"] is not None:
             while True:
                 offset += limit
-                endpoint = connection.add_parametrs_to_endpoint(
+                endpoint = connection.add_parameters_to_endpoint(
                     "playlists/{playlist_id}/tracks",
                     fields="next,items(added_at,track(id,name,uri))",
                     offset=offset,
@@ -144,7 +144,7 @@ class Playlist:
         return self._owner
 
     @property
-    async def snapshow_id(self) -> str:
+    async def snapshot_id(self) -> str:
         if self._snapshot_id is None:
             await self._load_laizy()
         return self._snapshot_id
@@ -164,7 +164,7 @@ class Playlist:
     async def search(self, *strings: str) -> List[Track]:
         if self._items is None:
             await self._load_laizy()
-        resutlts = []
+        results = []
         strings = [string.lower() for string in strings]
         for item in self._items:
             song_title = (await item["track"].name).lower()
@@ -177,6 +177,6 @@ class Playlist:
                     break
 
             if do_append:
-                resutlts.append(item["track"])
+                results.append(item["track"])
 
-        return resutlts
+        return results

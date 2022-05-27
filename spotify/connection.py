@@ -83,7 +83,7 @@ class Connection:
         return data
 
     @staticmethod
-    def add_parametrs_to_endpoint(endpoint: str, **params) -> str:
+    def add_parameters_to_endpoint(endpoint: str, **params) -> str:
         param_strings = []
         for key in params.keys():
             if params[key] is None:
@@ -99,4 +99,3 @@ class Connection:
 
     async def close(self):
         await self.session.close()
-

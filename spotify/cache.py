@@ -3,6 +3,7 @@ from __future__ import annotations
 from .connection import Connection
 
 
+# noinspection PyUnresolvedReferences
 class Cache:
     def __init__(self, connection: Connection, cache_dir: str = None):
         self._cache_dir = cache_dir

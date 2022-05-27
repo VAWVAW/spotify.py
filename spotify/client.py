@@ -10,7 +10,7 @@ class SpotifyClient:
     def __init__(self, cache_dir: str = None):
         self._connection = Connection()
         self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
-        #TODO initialise playlists
+        # TODO initialise playlists
 
     async def play(self, context_uri: str = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
         """
@@ -26,7 +26,7 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
         data = {}
-        endpoint = self._connection.add_parametrs_to_endpoint("me/player/play", device_id=device_id)
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/play", device_id=device_id)
 
         if offset is not None:
             data["offset"] = {"position": offset}
@@ -48,7 +48,7 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
 
-        endpoint = self._connection.add_parametrs_to_endpoint("me/player/pause", device_id=device_id)
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/pause", device_id=device_id)
 
         await self._connection.make_put_request(endpoint=endpoint)
 
@@ -61,7 +61,7 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
 
-        endpoint = self._connection.add_parametrs_to_endpoint("me/player/shuffle", device_id=device_id, state=state)
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/shuffle", device_id=device_id, state=state)
 
         await self._connection.make_put_request(endpoint=endpoint)
 
@@ -76,13 +76,13 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
 
-        endpoint = self._connection.add_parametrs_to_endpoint("me/player/queue", device_id=device_id, uri=uri)
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=uri)
 
         await self._connection.make_post_request(endpoint=endpoint)
 
     async def close(self) -> None:
         """
-        clean sesion and exit
+        clean session and exit
         """
         await self._connection.close()
 

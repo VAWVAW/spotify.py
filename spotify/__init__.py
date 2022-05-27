@@ -17,6 +17,7 @@ __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present VAWVAW'
 __version__ = '0.1.0'
 
+# noinspection PyUnboundLocalVariable
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 
 from collections import namedtuple
