@@ -57,7 +57,13 @@ class Cache:
         else:
             data = await element.make_request(uri=uri, connection=self._connection)
 
-        element.load_dict(data)
+        try:
+            element.load_dict(data)
+        except KeyError:
+            # maybe chache is outdated
+            data = await element.make_request(uri=uri, connection=self._connection)
+            element.load_dict(data)
+            cache_after = self._cache_dir is not None
 
         if cache_after:
             path = os.path.join(self._cache_dir, str(uri))
