@@ -129,8 +129,6 @@ class Playlist(Cacheable):
         return self._items
 
     async def search(self, *strings: str) -> List[Track]:
-        assert isinstance(strings, list)
-
         if self._items is None:
             await self._cache.load(uri=self._uri)
         results = []
