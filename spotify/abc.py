@@ -40,3 +40,7 @@ class Cacheable(ABC):
 
 class Playable(Cacheable, ABC):
     pass
+
+
+class PlayContext(Cacheable, ABC):
+    pass
