@@ -16,12 +16,14 @@ class Cache:
         self._by_uri = {}
         self._by_type = {
             "playlist": {},
+            "episode": {},
             "track": {},
             "user": {}
         }
 
         self._datatypes = {
             "playlist": Playlist,
+            "episode": Episode,
             "track": Track,
             "user": User
         }
@@ -61,7 +63,7 @@ class Cache:
 
         try:
             element.load_dict(data)
-        except (KeyError | ElementOutdated):
+        except (KeyError, ElementOutdated):
             # maybe chache is outdated
             data = await element.make_request(uri=uri, connection=self._connection)
             data["fetched"] = True
@@ -103,6 +105,7 @@ class Cache:
 
 
 from .playlist import Playlist
+from .episode import Episode
 from .user import User
 from .track import Track
-from .cacheable import Cacheable
+from .abc import Cacheable
