@@ -64,7 +64,7 @@ class Cache:
         try:
             element.load_dict(data)
         except (KeyError, ElementOutdated):
-            # maybe chache is outdated
+            # maybe cache is outdated
             data = await element.make_request(uri=uri, connection=self._connection)
             data["fetched"] = True
             element.load_dict(data)
