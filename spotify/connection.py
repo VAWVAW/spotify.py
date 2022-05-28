@@ -53,33 +53,33 @@ class Connection:
         except json.decoder.JSONDecodeError:
             return None
 
-    async def make_get_request(self, endpoint: str, **formats) -> dict | None:
-        response = await self.session.get("https://api.spotify.com/v1/" + endpoint.format(**formats), headers=self._get_header())
+    async def make_get_request(self, endpoint: str) -> dict | None:
+        response = await self.session.get("https://api.spotify.com/v1/" + endpoint, headers=self._get_header())
 
         try:
             data = await self._evaluate_response(response)
         except Retry:
-            data = await self.make_get_request(endpoint=endpoint, **formats)
+            data = await self.make_get_request(endpoint=endpoint)
 
         return data
 
-    async def make_put_request(self, endpoint: str, data: str = None, **formats) -> dict | None:
-        response = await self.session.put("https://api.spotify.com/v1/" + endpoint.format(**formats), data=data, headers=self._get_header())
+    async def make_put_request(self, endpoint: str, data: str = None) -> dict | None:
+        response = await self.session.put("https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
 
         try:
             data = await self._evaluate_response(response)
         except Retry:
-            data = await self.make_post_request(data=data, endpoint=endpoint, **formats)
+            data = await self.make_put_request(data=data, endpoint=endpoint)
 
         return data
 
-    async def make_post_request(self, endpoint: str, data: str = None, **formats) -> dict | None:
-        response = await self.session.post("https://api.spotify.com/v1/" + endpoint.format(**formats), data=data, headers=self._get_header())
+    async def make_post_request(self, endpoint: str, data: str = None) -> dict | None:
+        response = await self.session.post("https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
 
         try:
             data = await self._evaluate_response(response)
         except Retry:
-            data = await self.make_post_request(data=data, endpoint=endpoint, **formats)
+            data = await self.make_post_request(data=data, endpoint=endpoint)
 
         return data
 

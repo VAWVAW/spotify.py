@@ -51,25 +51,25 @@ class Playlist(Cacheable):
         offset = 0
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
-            "playlists/{playlist_id}",
+            "playlists/{playlist_id}".format(playlist_id=uri.id),
             fields="uri,description,name,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri)))",
             offset=offset,
             limit=limit
         )
 
-        data = await connection.make_get_request(endpoint, playlist_id=uri.id)
+        data = await connection.make_get_request(endpoint)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
             while True:
                 offset += limit
                 endpoint = connection.add_parameters_to_endpoint(
-                    "playlists/{playlist_id}/tracks",
+                    "playlists/{playlist_id}/tracks".format(playlist_id=uri.id),
                     fields="next,items(added_at,track(name,uri))",
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_get_request(endpoint, playlist_id=uri.id)
+                extra_data = await connection.make_get_request(endpoint)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:

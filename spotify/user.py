@@ -26,10 +26,10 @@ class User(Cacheable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "users/{user_id}",
+            "users/{user_id}".format(user_id=uri.id),
             fields="display_name,uri"
         )
-        return await connection.make_get_request(endpoint, user_id=uri.id)
+        return await connection.make_get_request(endpoint)
 
     @property
     def uri(self) -> URI:

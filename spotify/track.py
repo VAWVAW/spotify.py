@@ -27,10 +27,10 @@ class Track(Cacheable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "tracks/{id}",
-            fields="uri,name,album(id,uri,name),artists(id,uri,name)",
+            "tracks/{id}".format(id=uri.id),
+            fields="uri,name,album(uri,name),artists(uri,name)",
         )
-        return await connection.make_get_request(endpoint, id=uri.id)
+        return await connection.make_get_request(endpoint)
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
