@@ -3,10 +3,10 @@ from typing import List
 from .connection import Connection
 from .cache import Cache
 from .uri import URI
-from .abc import Cacheable
+from .abc import Playable
 
 
-class Track(Cacheable):
+class Track(Playable):
     def __init__(self, uri: URI, cache: Cache, name: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
 
