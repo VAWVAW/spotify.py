@@ -125,7 +125,7 @@ class SpotifyClient:
         # TODO add album fetch
         offset = 0
         limit = 50
-        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(uri,name)")
+        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(uri,name,snapshot_id)")
 
         data = await self._connection.make_get_request(endpoint=endpoint)
 
@@ -135,7 +135,7 @@ class SpotifyClient:
                 offset += limit
                 endpoint = self._connection.add_parameters_to_endpoint(
                     "me/playlists",
-                    fields="items(uri,name)",
+                    fields="items(uri,name,snapshot_id)",
                     offset=offset,
                     limit=limit
                 )
@@ -167,7 +167,7 @@ class SpotifyClient:
 
         self._playlists = []
         for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(uri=URI(playlist["uri"]), name=playlist["name"]))
+            self._playlists.append(self._cache.get_playlist(uri=URI(playlist["uri"]), name=playlist["name"], snapshot_id=playlist["snapshot_id"]))
 
         if cache_after:
             pass

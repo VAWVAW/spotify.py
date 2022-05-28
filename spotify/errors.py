@@ -29,3 +29,6 @@ class InternalServerError(SpotifyException):
 class Retry(Exception):
     pass
 
+
+class ElementOutdated(Exception):
+    pass

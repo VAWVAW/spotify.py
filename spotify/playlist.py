@@ -6,15 +6,17 @@ from .track import Track
 from .cache import Cache
 from .uri import URI
 from .cacheable import Cacheable
+from .errors import ElementOutdated
 
 
 class Playlist(Cacheable):
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
+    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
+
+        self._snapshot_id = snapshot_id
 
         self._description = None
         self._owner = None
-        self._snapshot_id = None
         self._public = None
         self._items = None
 
@@ -78,6 +80,9 @@ class Playlist(Cacheable):
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
+
+        if self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
+            raise ElementOutdated()
 
         self._name = data["name"]
         self._snapshot_id = data["snapshot_id"]

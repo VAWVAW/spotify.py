@@ -6,6 +6,7 @@ import os.path
 
 from .connection import Connection
 from .uri import URI
+from .errors import ElementOutdated
 
 
 class Cache:
@@ -42,7 +43,6 @@ class Cache:
         assert isinstance(uri, URI)
 
         element = self.get_element(uri)
-        cache_after = False
 
         # try to load from cache
         if self._cache_dir is not None:
@@ -50,22 +50,25 @@ class Cache:
             try:
                 with open(path, "r") as in_file:
                     data = json.load(in_file)
+                    data["fetched"] = False
             except (FileNotFoundError, json.JSONDecodeError):
                 # request new data
                 data = await element.make_request(uri=uri, connection=self._connection)
-                cache_after = True
+                data["fetched"] = True
         else:
             data = await element.make_request(uri=uri, connection=self._connection)
+            data["fetched"] = True
 
         try:
             element.load_dict(data)
-        except KeyError:
+        except (KeyError | ElementOutdated):
             # maybe chache is outdated
             data = await element.make_request(uri=uri, connection=self._connection)
+            data["fetched"] = True
             element.load_dict(data)
-            cache_after = self._cache_dir is not None
 
-        if cache_after:
+        # cache if needed
+        if data["fetched"] and self._cache_dir is not None:
             path = os.path.join(self._cache_dir, str(uri))
             with open(path, "w") as out_file:
                 json.dump(await element.to_dict(), out_file)
@@ -80,11 +83,11 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type["track"][str(uri)]
 
-    def get_playlist(self, uri: URI, name: str = None) -> Playlist:
+    def get_playlist(self, uri: URI, name: str = None, snapshot_id: str = None) -> Playlist:
         assert isinstance(uri, URI)
 
         if uri not in self._by_type["playlist"].keys():
-            to_add = Playlist(uri=uri, cache=self, name=name)
+            to_add = Playlist(uri=uri, cache=self, name=name, snapshot_id=snapshot_id)
             self._by_type["playlist"][uri] = to_add
             self._by_uri[str(uri)] = to_add
         return self._by_type["playlist"][uri]
