@@ -89,7 +89,7 @@ class Playlist(Cacheable):
             if track_to_add["track"] is None:
                 continue
             self._items.append({
-                "track": self._cache.get_track(uri=URI(track_to_add["track"]["uri"]), name=track_to_add["track"]["name"]),
+                "track": self._cache.get_element(uri=URI(track_to_add["track"]["uri"]), name=track_to_add["track"]["name"]),
                 "added_at": track_to_add["added_at"]
             })
 
