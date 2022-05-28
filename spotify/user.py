@@ -1,6 +1,6 @@
 from .cache import Cache
 from .uri import URI
-from .cacheable import Cacheable
+from .abc import Cacheable
 from .connection import Connection
 
 

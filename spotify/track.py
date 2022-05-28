@@ -3,7 +3,7 @@ from typing import List
 from .connection import Connection
 from .cache import Cache
 from .uri import URI
-from .cacheable import Cacheable
+from .abc import Cacheable
 
 
 class Track(Cacheable):

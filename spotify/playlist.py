@@ -5,11 +5,11 @@ from .user import User
 from .track import Track
 from .cache import Cache
 from .uri import URI
-from .cacheable import Cacheable
+from .abc import Playable
 from .errors import ElementOutdated
 
 
-class Playlist(Cacheable):
+class Playlist(Playable):
     def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
 

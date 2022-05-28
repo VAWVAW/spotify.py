@@ -36,3 +36,7 @@ class Cacheable(ABC):
     @abstractmethod
     async def make_request(uri: URI, connection: Connection) -> dict:
         pass
+
+
+class Playable(Cacheable, ABC):
+    pass
