@@ -104,7 +104,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type["user"][uri]
 
-    async def get_token(self, client_id: str = None, client_secret: str = None, refresh_token: str = None, scope: Scope = None, show_dialog: bool = False):
+    def load_token(self, client_id: str = None, client_secret: str = None, refresh_token: str = None, scope: Scope = Scope(), show_dialog: bool = False, token: str = None, expires: int = 0):
         if self._cache_dir is not None:
             try:
                 with open(os.path.join(self._cache_dir, "token"), "r") as in_file:
@@ -117,6 +117,9 @@ class Cache:
                     client_secret = cached["client_secret"]
                 if refresh_token is None and cached["refresh_token"] is not None:
                     refresh_token = cached["refresh_token"]
+                if token is None and cached["token"] is not None:
+                    token = cached["token"]
+                    expires = cached["expires"]
 
                 if not scope.is_equal(cached["scope"]):
                     refresh_token = None
@@ -125,27 +128,13 @@ class Cache:
                 # don't use cached data and recache
                 pass
 
-        if refresh_token is None:
-            if client_id is None:
-                raise Exception("no client id provided")
-            if client_secret is None:
-                raise Exception("no client secret provided")
-            data = await self._connection.get_token(client_id=client_id, client_secret=client_secret, show_dialog=show_dialog, scope=scope)
-            refresh_token = data["refresh_token"]
-        else:
-            data = await self._connection.refresh_access_token(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token)
+        self._connection.set_token_data(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token, scope=scope, show_dialog=show_dialog, token=token, expires=expires)
 
-        scope = data["scope"]
-
-        if self._cache_dir is not None:
-            with open(os.path.join(self._cache_dir, "token"), "w") as out_file:
-                cached = {
-                    "client_id": client_id,
-                    "client_secret": client_secret,
-                    "scope": str(scope),
-                    "refresh_token": refresh_token
-                }
-                json.dump(cached, out_file)
+    def close(self):
+        if self._cache_dir is None:
+            return
+        with open(os.path.join(self._cache_dir, "token"), "w") as out_file:
+            json.dump(self._connection.dump_token_data(), out_file)
 
 
 from .playlist import Playlist

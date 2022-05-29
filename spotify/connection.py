@@ -16,6 +16,8 @@ class Connection:
         self._client_id = None
         self._client_secret = None
         self._refresh_token = None
+        self._show_dialog = False
+        self._scope = ""
 
     def _get_header(self) -> dict:
         return {
@@ -36,7 +38,7 @@ class Connection:
                 raise BadRequestException(json.loads(await response.text()))
             case 401:
                 if self.is_expired:
-                    await self.refresh_access_token()
+                    await self._get_token()
                     raise Retry()
                 raise InvalidTokenException(json.loads(await response.text()))
             case 403:
@@ -60,6 +62,8 @@ class Connection:
             return None
 
     async def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
+        if self._token is None:
+            await self._get_token()
         response = await self.session.request(method, "https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
         try:
             data = await self._evaluate_response(response)
@@ -85,7 +89,7 @@ class Connection:
     async def close(self):
         await self.session.close()
 
-    async def get_token(self, client_id: str, client_secret: str, scope: Scope = None, show_dialog: bool = False) -> dict:
+    async def _request_token(self) -> dict:
         """
         :return: {'token_type': 'Bearer', 'scope': scope_str, 'refresh_token': refresh_token}
         """
@@ -99,17 +103,14 @@ class Connection:
         # redirect uri that needs to be set in the application settings
         redirect_uri = "http://localhost:2342/"
 
-        if scope is None:
-            scope = ""
-
         # spotify query that the user needs to accept to gain the access token
         endpoint = self.add_parameters_to_endpoint(
             "https://accounts.spotify.com/authorize",
-            client_id=client_id,
+            client_id=self._client_id,
             response_type="code",
-            scope=str(scope),
+            scope=str(self._scope),
             state=state,
-            show_dialog=show_dialog,
+            show_dialog=self._show_dialog,
             redirect_uri=redirect_uri
         )
         # open the url in the (hopefully) default browser
@@ -150,7 +151,7 @@ class Connection:
         form.add_field("code", auth_code)
         form.add_field("redirect_uri", redirect_uri)
 
-        encoded = base64.b64encode(bytes(client_id + ":" + client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(bytes(self._client_id + ":" + self._client_secret, "utf8")).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -166,37 +167,20 @@ class Connection:
         self._token = data["access_token"]
         self._expires = time.time() + data["expires_in"]
         self._refresh_token = data["refresh_token"]
-        self._client_id = client_id
-        self._client_secret = client_secret
 
         return {"scope": data["scope"], "refresh_token": data["refresh_token"]}
 
-    async def refresh_access_token(self, client_id: str = None, client_secret: str = None, refresh_token: str = None) -> dict:
+    async def _refresh_access_token(self) -> dict:
         """
         make request to spotify to get a new Bearer from the refresh token
         :return: {'scope': scope_str}
         """
-        # use cached data if needed
-        if client_id is None:
-            if self._client_id is None:
-                raise Exception("No client id provided")
-            client_id = self._client_id
-
-        if client_secret is None:
-            if self._client_secret is None:
-                raise Exception("No client secret provided")
-            client_secret = self._client_secret
-
-        if refresh_token is None:
-            if self._refresh_token is None:
-                raise Exception("No refresh token provided")
-            refresh_token = self._refresh_token
 
         form = aiohttp.FormData()
         form.add_field("grant_type", "refresh_token")
-        form.add_field("refresh_token", refresh_token)
+        form.add_field("refresh_token", self._refresh_token)
 
-        encoded = base64.b64encode(bytes(client_id + ":" + client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(bytes(self._client_id + ":" + self._client_secret, "utf8")).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -211,11 +195,34 @@ class Connection:
 
         self._token = data["access_token"]
         self._expires = time.time() + data["expires_in"]
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._refresh_token = refresh_token
 
         return {"scope": data["scope"]}
+
+    async def _get_token(self):
+        if self._refresh_token is not None:
+            await self._refresh_access_token()
+        else:
+            await self._request_token()
+
+    def set_token_data(self, client_id: str, client_secret: str, scope: Scope = Scope(), refresh_token: str = None, show_dialog: bool = False, token: str = None, expires: int = 0):
+        self._client_id = client_id
+        self._client_secret = client_secret
+        self._scope = scope
+        self._refresh_token = refresh_token
+        self._show_dialog = show_dialog
+        self._token = token
+        self._expires = expires
+
+    def dump_token_data(self) -> dict:
+        return {
+            "client_id": self._client_id,
+            "client_secret": self._client_secret,
+            "scope": str(self._scope),
+            "refresh_token": self._refresh_token,
+            "show_dialog": self._show_dialog,
+            "token": self._token,
+            "expires": self._expires
+        }
 
     @property
     def is_expired(self) -> bool:

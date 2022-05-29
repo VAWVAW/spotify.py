@@ -15,32 +15,27 @@ from .scope import Scope
 
 
 class SpotifyClient:
-    def __init__(self, cache_dir: str = None):
+    def __init__(self, cache_dir: str = None, client_id: str = None, client_secret: str = None, scope: Scope = None, show_dialog: bool = False):
         """
         You need to request a token using SpotifyClient.request_token() to interact with the api.
-        :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
-        """
-        assert isinstance(cache_dir, (str | None))
 
-        self._connection = Connection()
-        self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
-        self._playlists = None
-
-    async def request_token(self, client_id: str = None, client_secret: str = None, scope: Scope = None, show_dialog: bool = False):
-        """
         You need to register an application at https://developer.spotify.com/dashboard/applications and edit the settings to add "http://localhost:2342/" to the redirect uris to allow this library to request a token.
         If you want to use a token you generated yourself refer to SpotifyClient.set_token().
-
         :param client_id: the Client ID of the application
         :param client_secret: the Client Secret of the application (click on "SHOW CLIENT SECRET")
         :param scope: the Scope object reflecting the permissions you need
         :param show_dialog: whether to query the user every time a new refresh token is requested
+        :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
         """
+        assert isinstance(cache_dir, (str | None))
         assert isinstance(client_id, str)
         assert isinstance(client_secret, str)
         assert isinstance(scope, (Scope | None))
 
-        await self._cache.get_token(client_id=client_id, client_secret=client_secret, scope=scope, show_dialog=show_dialog)
+        self._connection = Connection()
+        self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
+        self._playlists = None
+        self._cache.load_token(client_id=client_id, client_secret=client_secret, scope=scope, show_dialog=show_dialog)
 
     async def set_token(self, token: str):
         """
@@ -67,7 +62,7 @@ class SpotifyClient:
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(elements, (list | None))
-        assert isinstance(context, (URI | PlayContext))
+        assert isinstance(context, (URI | PlayContext | None))
         assert isinstance(offset, (int | None))
         assert isinstance(position_ms, (int | None))
         assert isinstance(device_id, (str | None))
@@ -151,6 +146,7 @@ class SpotifyClient:
         clean session and exit
         """
         await self._connection.close()
+        self._cache.close()
 
     async def get_devices(self) -> List[dict]:
         """
