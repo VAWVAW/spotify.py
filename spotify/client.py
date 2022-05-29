@@ -266,5 +266,3 @@ class SpotifyClient:
         endpoint = "me/player"
 
         return await self._connection.make_request(method="GET", endpoint=endpoint)
-
-# TODO add album support

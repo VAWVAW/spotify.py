@@ -47,7 +47,7 @@ class Track(Playable):
         assert str(self._uri) == data["uri"]
 
         self._name = data["name"]
-        self._album = self._cache.get_album(uri=URI(data["album"]["uri"]), name = data["album"]["name"])
+        self._album = self._cache.get_album(uri=URI(data["album"]["uri"]), name=data["album"]["name"])
         self._artists = []
 
         for artist in data["artists"]:

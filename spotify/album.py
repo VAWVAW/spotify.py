@@ -99,3 +99,5 @@ class Album(PlayContext):
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists
+
+    # TODO add search
