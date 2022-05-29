@@ -30,7 +30,7 @@ class Track(Playable):
             "tracks/{id}".format(id=uri.id),
             fields="uri,name,album(uri,name),artists(uri,name)",
         )
-        return await connection.make_get_request(endpoint)
+        return await connection.make_request("GET", endpoint)
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)

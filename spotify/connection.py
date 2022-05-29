@@ -59,35 +59,12 @@ class Connection:
         except json.decoder.JSONDecodeError:
             return None
 
-    # TODO concentrate in session.request()
-    async def make_get_request(self, endpoint: str) -> dict | None:
-        response = await self.session.get("https://api.spotify.com/v1/" + endpoint, headers=self._get_header())
-
+    async def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
+        response = await self.session.request(method, "https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
         try:
             data = await self._evaluate_response(response)
         except Retry:
-            data = await self.make_get_request(endpoint=endpoint)
-
-        return data
-
-    async def make_put_request(self, endpoint: str, data: str = None) -> dict | None:
-        response = await self.session.put("https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
-
-        try:
-            data = await self._evaluate_response(response)
-        except Retry:
-            data = await self.make_put_request(data=data, endpoint=endpoint)
-
-        return data
-
-    async def make_post_request(self, endpoint: str, data: str = None) -> dict | None:
-        response = await self.session.post("https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
-
-        try:
-            data = await self._evaluate_response(response)
-        except Retry:
-            data = await self.make_post_request(data=data, endpoint=endpoint)
-
+            data = await self._evaluate_response(await self.session.request(method, endpoint, data=data, headers=self._get_header()))
         return data
 
     @staticmethod

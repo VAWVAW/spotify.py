@@ -23,7 +23,7 @@ class Episode(Playable):
             "episodes/{id}".format(id=uri.id),
             fields="uri,name"
         )
-        return await connection.make_get_request(endpoint)
+        return await connection.make_request("GET", endpoint)
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)

@@ -57,7 +57,7 @@ class Playlist(PlayContext):
             limit=limit
         )
 
-        data = await connection.make_get_request(endpoint)
+        data = await connection.make_request("GET", endpoint)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
@@ -69,7 +69,7 @@ class Playlist(PlayContext):
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_get_request(endpoint)
+                extra_data = await connection.make_request("GET", endpoint)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:

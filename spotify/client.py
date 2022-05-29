@@ -97,10 +97,10 @@ class SpotifyClient:
 
         if send_payload:
             # play specified resource
-            await self._connection.make_put_request(endpoint=endpoint, data=json.dumps(data))
+            await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps(data))
         else:
             # resume whatever was playing
-            await self._connection.make_put_request(endpoint=endpoint)
+            await self._connection.make_request(method="PUT", endpoint=endpoint)
 
     async def pause(self, device_id: str = None) -> None:
         """
@@ -113,7 +113,7 @@ class SpotifyClient:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/pause", device_id=device_id)
 
-        await self._connection.make_put_request(endpoint=endpoint)
+        await self._connection.make_request(method="PUT", endpoint=endpoint)
 
     async def set_playback_shuffle(self, state: bool = True, device_id: str = None) -> None:
         """
@@ -128,7 +128,7 @@ class SpotifyClient:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/shuffle", device_id=device_id, state=state)
 
-        await self._connection.make_put_request(endpoint=endpoint)
+        await self._connection.make_request(method="PUT", endpoint=endpoint)
 
     async def add_to_queue(self, element: (URI | Playable), device_id: str = None) -> None:
         """
@@ -144,7 +144,7 @@ class SpotifyClient:
         assert isinstance(device_id, (str | None))
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else await element.uri))
-        await self._connection.make_post_request(endpoint=endpoint)
+        await self._connection.make_request(method="POST", endpoint=endpoint)
 
     async def close(self) -> None:
         """
@@ -157,7 +157,7 @@ class SpotifyClient:
         return a list of all devices registered in spotify connect
         """
         endpoint = "me/player/devices"
-        data = await self._connection.make_get_request(endpoint=endpoint)
+        data = await self._connection.make_request(method="GET", endpoint=endpoint)
         return data["devices"]
 
     async def transfer_playback(self, device_id: str, play: bool = False) -> None:
@@ -170,7 +170,7 @@ class SpotifyClient:
         assert isinstance(play, bool)
 
         endpoint = "me/player"
-        await self._connection.make_put_request(endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
+        await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
     async def _fetch_playlists(self) -> dict:
         # TODO add album fetch
@@ -178,7 +178,7 @@ class SpotifyClient:
         limit = 50
         endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(uri,name,snapshot_id)")
 
-        data = await self._connection.make_get_request(endpoint=endpoint)
+        data = await self._connection.make_request(method="GET", endpoint=endpoint)
 
         # check for long data that needs paging
         if data["next"] is not None:
@@ -190,7 +190,7 @@ class SpotifyClient:
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await self._connection.make_get_request(endpoint)
+                extra_data = await self._connection.make_request(method="PUT", endpoint=endpoint)
                 data["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -269,6 +269,6 @@ class SpotifyClient:
         """
         endpoint = "me/player"
 
-        return await self._connection.make_get_request(endpoint=endpoint)
+        return await self._connection.make_request(method="GET", endpoint=endpoint)
 
 # TODO add album support

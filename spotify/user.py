@@ -29,7 +29,7 @@ class User(Cacheable):
             "users/{user_id}".format(user_id=uri.id),
             fields="display_name,uri"
         )
-        return await connection.make_get_request(endpoint)
+        return await connection.make_request("GET", endpoint)
 
     @property
     def uri(self) -> URI:
