@@ -18,7 +18,10 @@ class Track(Playable):
         return {
             "uri": str(self._uri),
             "name": self._name,
-            "album": self._album,
+            "album": {
+                "name": await self._album.name,
+                "uri": str(await self._album.uri)
+            },
             "artists": [
                 {
                     "uri": str(await artist.uri),
@@ -41,7 +44,7 @@ class Track(Playable):
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
-        assert str(self._uri) == dict["uri"]
+        assert str(self._uri) == data["uri"]
 
         self._name = data["name"]
         self._album = self._cache.get_album(uri=URI(data["album"]["uri"]), name = data["album"]["name"])

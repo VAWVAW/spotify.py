@@ -62,13 +62,14 @@ class Connection:
             return None
 
     async def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
+        url = "https://api.spotify.com/v1/" + endpoint
         if self._token is None:
             await self._get_token()
-        response = await self.session.request(method, "https://api.spotify.com/v1/" + endpoint, data=data, headers=self._get_header())
+        response = await self.session.request(method, url, data=data, headers=self._get_header())
         try:
             data = await self._evaluate_response(response)
         except Retry:
-            data = await self._evaluate_response(await self.session.request(method, endpoint, data=data, headers=self._get_header()))
+            data = await self._evaluate_response(await self.session.request(method, url, data=data, headers=self._get_header()))
         return data
 
     @staticmethod
