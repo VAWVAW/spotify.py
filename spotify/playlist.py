@@ -2,10 +2,9 @@ from typing import List
 
 from .connection import Connection
 from .user import User
-from .track import Track
 from .cache import Cache
 from .uri import URI
-from .abc import PlayContext
+from .abc import PlayContext, Playable
 from .errors import ElementOutdated
 
 
@@ -46,8 +45,8 @@ class Playlist(PlayContext):
     async def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
-
         assert uri.type == "playlist"
+
         offset = 0
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
@@ -123,12 +122,12 @@ class Playlist(PlayContext):
         return self._public
 
     @property
-    async def items(self) -> List[Track]:
+    async def items(self) -> List[Playable]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
         return self._items
 
-    async def search(self, *strings: str) -> List[Track]:
+    async def search(self, *strings: str) -> List[Playable]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
         results = []

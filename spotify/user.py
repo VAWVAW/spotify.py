@@ -32,11 +32,7 @@ class User(Cacheable):
         return await connection.make_request("GET", endpoint)
 
     @property
-    def uri(self) -> URI:
-        return self._uri
-
-    @property
-    def display_name(self) -> str:
+    async def display_name(self) -> str:
         if self._name is None:
-            self._cache.load(self.uri)
+            await self._cache.load(await self.uri)
         return self._name

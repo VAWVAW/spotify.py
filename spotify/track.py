@@ -4,6 +4,7 @@ from .connection import Connection
 from .cache import Cache
 from .uri import URI
 from .abc import Playable
+from .artist import Artist
 
 
 class Track(Playable):
@@ -18,7 +19,13 @@ class Track(Playable):
             "uri": str(self._uri),
             "name": self._name,
             "album": self._album,
-            "artists": self._artists
+            "artists": [
+                {
+                    "uri": str(await artist.uri),
+                    "name": await artist.name
+                }
+                for artist in self._artists
+            ]
         }
 
     @staticmethod
@@ -37,8 +44,11 @@ class Track(Playable):
         assert str(self._uri) == dict["uri"]
 
         self._name = data["name"]
-        self._album = data["album"]
-        self._artists = data["artists"]
+        self._album = self._cache.get_album(uri=URI(data["album"]["uri"]), name = data["album"]["name"])
+        self._artists = []
+
+        for artist in data["artists"]:
+            self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
     async def album(self) -> dict:
@@ -47,7 +57,7 @@ class Track(Playable):
         return self._album
 
     @property
-    async def artists(self) -> List[dict]:
+    async def artists(self) -> List[Artist]:
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists

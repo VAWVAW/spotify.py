@@ -19,6 +19,8 @@ class Cache:
             "playlist": {},
             "episode": {},
             "track": {},
+            "album": {},
+            "artist": {},
             "user": {}
         }
 
@@ -26,6 +28,8 @@ class Cache:
             "playlist": Playlist,
             "episode": Episode,
             "track": Track,
+            "album": Album,
+            "artist": Artist,
             "user": User
         }
 
@@ -95,6 +99,24 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type["playlist"][uri]
 
+    def get_album(self, uri: URI, name: str = None) -> Album:
+        assert isinstance(uri, URI)
+
+        if uri not in self._by_type["playlist"].keys():
+            to_add = Album(uri=uri, cache=self, name=name)
+            self._by_type["album"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
+        return self._by_type["album"][uri]
+
+    def get_artist(self, uri: URI, name: str = None) -> Artist:
+        assert isinstance(uri, URI)
+
+        if uri not in self._by_type["artist"].keys():
+            to_add = Artist(uri=uri, cache=self, name=name)
+            self._by_type["artist"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
+        return self._by_type["artist"][uri]
+
     def get_user(self, uri: URI, display_name: str = None) -> User:
         assert isinstance(uri, URI)
 
@@ -142,3 +164,5 @@ from .episode import Episode
 from .user import User
 from .track import Track
 from .abc import Cacheable
+from .artist import Artist
+from .album import Album
