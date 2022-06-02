@@ -116,6 +116,7 @@ class Connection:
         )
         # open the url in the (hopefully) default browser
         webbrowser.open(endpoint)
+        print("Please check your web browser for identification.")
 
         # simple function to listen for and extract the http query from one request
         serversocket = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
