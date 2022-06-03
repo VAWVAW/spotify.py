@@ -63,4 +63,4 @@ class Track(Playable):
     async def artists(self) -> List[Artist]:
         if self._artists is None:
             await self._cache.load(uri=self._uri)
-        return self._artists
+        return self._artists.copy()

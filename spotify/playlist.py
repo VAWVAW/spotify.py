@@ -125,7 +125,7 @@ class Playlist(PlayContext):
     async def items(self) -> List[Playable]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
-        return self._items
+        return self._items.copy()
 
     async def search(self, *strings: str) -> List[Playable]:
         if self._items is None:

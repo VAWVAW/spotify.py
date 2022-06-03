@@ -92,12 +92,12 @@ class Album(PlayContext):
     async def tracks(self) -> List[Track]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
-        return self._items
+        return self._items.copy()
 
     @property
     async def artists(self) -> List[Artist]:
         if self._artists is None:
             await self._cache.load(uri=self._uri)
-        return self._artists
+        return self._artists.copy()
 
     # TODO add search
