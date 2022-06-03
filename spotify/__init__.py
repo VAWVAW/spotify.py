@@ -23,12 +23,12 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 from collections import namedtuple
 import logging
 
+from .user import *
 from .errors import *
 from .client import *
 from .connection import *
 from .playlist import *
 from .track import *
-from .user import *
 from .cache import *
 from .uri import *
 

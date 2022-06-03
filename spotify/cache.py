@@ -159,9 +159,9 @@ class Cache:
             json.dump(self._connection.dump_token_data(), out_file)
 
 
+from .user import User
 from .playlist import Playlist
 from .episode import Episode
-from .user import User
 from .track import Track
 from .abc import Cacheable
 from .artist import Artist

@@ -5,9 +5,9 @@ from typing import List
 
 from .connection import Connection
 from .cache import Cache
+from .user import User
 from .playlist import Playlist
 from .track import Track
-from .user import User
 from .uri import URI
 from .abc import Playable, PlayContext
 from .errors import BadRequestException
