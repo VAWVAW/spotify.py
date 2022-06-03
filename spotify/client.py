@@ -1,5 +1,4 @@
 import json
-import os
 
 from typing import List
 
@@ -34,7 +33,6 @@ class SpotifyClient:
 
         self._connection = Connection()
         self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
-        self._playlists = None
         self._cache.load_token(client_id=client_id, client_secret=client_secret, scope=scope, show_dialog=show_dialog)
 
     async def set_token(self, token: str):
@@ -168,68 +166,12 @@ class SpotifyClient:
         endpoint = "me/player"
         await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
-    async def _fetch_playlists(self) -> dict:
-        # TODO add album fetch
-        offset = 0
-        limit = 50
-        endpoint = self._connection.add_parameters_to_endpoint("me/playlists", offset=offset, limit=limit, fields="items(uri,name,snapshot_id)")
-
-        data = await self._connection.make_request(method="GET", endpoint=endpoint)
-
-        # check for long data that needs paging
-        if data["next"] is not None:
-            while True:
-                offset += limit
-                endpoint = self._connection.add_parameters_to_endpoint(
-                    "me/playlists",
-                    fields="items(uri,name,snapshot_id)",
-                    offset=offset,
-                    limit=limit
-                )
-                extra_data = await self._connection.make_request(method="PUT", endpoint=endpoint)
-                data["items"] += extra_data["items"]
-
-                if extra_data["next"] is None:
-                    break
-        return data
-
-    async def load_user(self) -> None:
-        """
-        load user data from cache if possible
-        """
-        cache_after = False
-        # try to load from cache
-        if self._cache.cache_dir is not None:
-            path = os.path.join(self._cache.cache_dir, "user")
-            try:
-                # load from cache
-                with open(path, "r") as in_file:
-                    data = json.load(in_file)
-            except (FileNotFoundError, json.JSONDecodeError):
-                # request new data
-                data = {"playlists": await self._fetch_playlists()}
-                cache_after = True
-        else:
-            data = {"playlists": await self._fetch_playlists()}
-
-        self._playlists = []
-        for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(uri=URI(playlist["uri"]), name=playlist["name"], snapshot_id=playlist["snapshot_id"]))
-
-        if cache_after:
-            pass
-            # TODO cache user playlists
-            # await self._cache_self()
-
     async def user_playlists(self) -> List[Playlist]:
         """
         get playlists of current user
         :return: list of playlists saved in the user profile
         """
-        if self._playlists is None:
-            await self.load_user()
-
-        return self._playlists.copy()
+        return await (await self._cache.get_me()).playlists
 
     async def get_playlist(self, uri: URI) -> Playlist:
         """

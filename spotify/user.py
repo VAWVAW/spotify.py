@@ -94,6 +94,86 @@ class User(Cacheable):
         return self._playlists.copy()
 
 
+class Me(User):
+    def __init__(self, cache: Cache):
+        assert isinstance(cache, Cache)
+        self._uri = None
+        self._cache = cache
+        self._playlists = None
+
+    @staticmethod
+    async def make_request(uri: (URI, None), connection: Connection) -> dict:
+        assert isinstance(connection, Connection)
+
+        endpoint = connection.add_parameters_to_endpoint(
+            "me",
+            fields="display_name,uri"
+        )
+        base = await connection.make_request("GET", endpoint)
+
+        # get playlists
+        offset = 0
+        limit = 50
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/playlists",
+            offset=offset,
+            limit=limit,
+            fields="items(uri,name,snapshot_id)"
+        )
+
+        data = await connection.make_request("GET", endpoint)
+        # check for long data that needs paging
+        if data["next"] is not None:
+            while True:
+                endpoint = connection.add_parameters_to_endpoint(
+                    "me/playlists",
+                    offset=offset,
+                    limit=limit,
+                    fields="items(uri,name,snapshot_id)"
+                )
+                offset += limit
+                extra_data = await connection.make_request("GET", endpoint)
+                data["items"] += extra_data["items"]
+
+                if extra_data["next"] is None:
+                    break
+        base["playlists"] = data
+
+        return base
+
+    def load_dict(self, data: dict):
+        assert isinstance(data, dict)
+
+        self._uri = URI(data["uri"])
+        self._name = data["display_name"]
+
+        self._playlists = []
+        for playlist in data["playlists"]["items"]:
+            self._playlists.append(self._cache.get_playlist(
+                uri=URI(playlist["uri"]),
+                name=playlist["name"],
+                snapshot_id=playlist["snapshot_id"]
+            ))
+
+    @property
+    async def display_name(self) -> str:
+        if self._name is None:
+            await self._cache.load_me()
+        return self._name
+
+    @property
+    async def playlists(self) -> List[Playlist]:
+        if self._playlists is None:
+            await self._cache.load_me()
+        return self._playlists.copy()
+
+    @property
+    async def name(self) -> str:
+        if self._name is None:
+            await self._cache.load_me()
+        return self._name
+
+
 from .playlist import Playlist
 from .cache import Cache
 from .uri import URI

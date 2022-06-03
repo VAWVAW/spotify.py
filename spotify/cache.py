@@ -15,6 +15,7 @@ class Cache:
         self._cache_dir = cache_dir
         self._connection = connection
         self._by_uri = {}
+        self._me = None
         self._by_type = {
             "playlist": {},
             "episode": {},
@@ -77,6 +78,43 @@ class Cache:
         # cache if needed
         if data["fetched"] and self._cache_dir is not None:
             path = os.path.join(self._cache_dir, str(uri))
+            with open(path, "w") as out_file:
+                json.dump(await element.to_dict(), out_file)
+
+    async def get_me(self) -> Me:
+        if self._me is None:
+            self._me = Me(cache=self)
+        return self._me
+
+    async def load_me(self):
+        element = await self.get_me()
+
+        # try to load from cache
+        if self._cache_dir is not None:
+            path = os.path.join(self._cache_dir, "me")
+            try:
+                with open(path, "r") as in_file:
+                    data = json.load(in_file)
+                    data["fetched"] = False
+            except (FileNotFoundError, json.JSONDecodeError):
+                # request new data
+                data = await element.make_request(uri=None, connection=self._connection)
+                data["fetched"] = True
+        else:
+            data = await element.make_request(uri=None, connection=self._connection)
+            data["fetched"] = True
+
+        try:
+            element.load_dict(data)
+        except (KeyError, ElementOutdated):
+            # maybe cache is outdated
+            data = await element.make_request(uri=None, connection=self._connection)
+            data["fetched"] = True
+            element.load_dict(data)
+
+        # cache if needed
+        if data["fetched"] and self._cache_dir is not None:
+            path = os.path.join(self._cache_dir, "me")
             with open(path, "w") as out_file:
                 json.dump(await element.to_dict(), out_file)
 
@@ -159,7 +197,7 @@ class Cache:
             json.dump(self._connection.dump_token_data(), out_file)
 
 
-from .user import User
+from .user import User, Me
 from .playlist import Playlist
 from .episode import Episode
 from .track import Track
