@@ -35,7 +35,7 @@ class User(Cacheable):
         self._playlists = []
         for playlist in data["playlists"]["items"]:
             self._playlists.append(self._cache.get_playlist(
-                uri=playlist["uri"],
+                uri=URI(playlist["uri"]),
                 name=playlist["name"],
                 snapshot_id=playlist["snapshot_id"]
             ))
