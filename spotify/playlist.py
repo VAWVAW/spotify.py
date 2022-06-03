@@ -23,7 +23,11 @@ class Playlist(PlayContext):
         return {
             "uri": str(self._uri),
             "description": self._description,
-            "owner": self._owner.to_dict(),
+            "owner":
+                {
+                    "uri": str(await self._owner.uri),
+                    "display_name": await self._owner.name
+                },
             "snapshot_id": self._snapshot_id,
             "name": self._name,
             "public": self._public,
