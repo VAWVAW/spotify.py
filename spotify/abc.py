@@ -1,8 +1,5 @@
+from __future__ import annotations
 from abc import ABC, abstractmethod
-
-from .uri import URI
-from .connection import Connection
-from .cache import Cache
 
 
 class Cacheable(ABC):
@@ -44,3 +41,8 @@ class Playable(Cacheable, ABC):
 
 class PlayContext(Cacheable, ABC):
     pass
+
+
+from .uri import URI
+from .connection import Connection
+from .cache import Cache

@@ -23,14 +23,17 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 from collections import namedtuple
 import logging
 
-from .user import *
+from .cache import Cache
+from .user import User
 from .errors import *
-from .client import *
-from .connection import *
-from .playlist import *
-from .track import *
-from .cache import *
-from .uri import *
+from .scope import Scope
+from .client import SpotifyClient
+from .playlist import Playlist
+from .track import Track
+from .uri import URI
+from .album import Album
+from .artist import Artist
+from .episode import Episode
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

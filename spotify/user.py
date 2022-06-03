@@ -2,10 +2,7 @@ from __future__ import annotations
 
 from typing import List
 
-from .cache import Cache
-from .uri import URI
 from .abc import Cacheable
-from .connection import Connection
 
 
 class User(Cacheable):
@@ -98,4 +95,8 @@ class User(Cacheable):
 
 
 from .playlist import Playlist
+from .cache import Cache
+from .uri import URI
+from .connection import Connection
+
 
