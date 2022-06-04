@@ -1,5 +1,3 @@
-from typing import List
-
 from .abc import PlayContext
 from .uri import URI
 from .cache import Cache
@@ -89,13 +87,13 @@ class Album(PlayContext):
             self._items.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
-    async def tracks(self) -> List[Track]:
+    async def tracks(self) -> list[Track]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
         return self._items.copy()
 
     @property
-    async def artists(self) -> List[Artist]:
+    async def artists(self) -> list[Artist]:
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists.copy()

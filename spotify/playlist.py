@@ -1,5 +1,3 @@
-from typing import List
-
 from .connection import Connection
 from .user import User
 from .cache import Cache
@@ -126,12 +124,12 @@ class Playlist(PlayContext):
         return self._public
 
     @property
-    async def items(self) -> List[Playable]:
+    async def items(self) -> list[dict[str, (Playable | str)]]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
         return self._items.copy()
 
-    async def search(self, *strings: str) -> List[Playable]:
+    async def search(self, *strings: str) -> list[Playable]:
         if self._items is None:
             await self._cache.load(uri=self._uri)
         results = []

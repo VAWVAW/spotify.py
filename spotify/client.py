@@ -1,7 +1,5 @@
 import json
 
-from typing import List
-
 from .connection import Connection
 from .cache import Cache
 from .user import User
@@ -44,7 +42,7 @@ class SpotifyClient:
 
         self._connection._token = token
 
-    async def play(self, elements: List[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
+    async def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
         """
         resume playback or play specified resource\n
         only one of elements and context may be specified\n\n
@@ -146,7 +144,7 @@ class SpotifyClient:
         await self._connection.close()
         self._cache.close()
 
-    async def get_devices(self) -> List[dict]:
+    async def get_devices(self) -> list[dict[str, (str | bool | int)]]:
         """
         return a list of all devices registered in spotify connect
         """
@@ -166,7 +164,7 @@ class SpotifyClient:
         endpoint = "me/player"
         await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
-    async def user_playlists(self) -> List[Playlist]:
+    async def user_playlists(self) -> list[Playlist]:
         """
         get playlists of current user
         :return: list of playlists saved in the user profile

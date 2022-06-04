@@ -1,7 +1,5 @@
 from __future__ import annotations
 
-from typing import List
-
 from .abc import Cacheable
 
 
@@ -88,13 +86,14 @@ class User(Cacheable):
         return self._name
 
     @property
-    async def playlists(self) -> List[Playlist]:
+    async def playlists(self) -> list[Playlist]:
         if self._playlists is None:
             await self._cache.load(await self.uri)
         return self._playlists.copy()
 
 
 class Me(User):
+    # noinspection PyMissingConstructor
     def __init__(self, cache: Cache):
         assert isinstance(cache, Cache)
         self._uri = None
@@ -162,7 +161,7 @@ class Me(User):
         return self._name
 
     @property
-    async def playlists(self) -> List[Playlist]:
+    async def playlists(self) -> list[Playlist]:
         if self._playlists is None:
             await self._cache.load_me()
         return self._playlists.copy()

@@ -1,6 +1,3 @@
-from typing import List
-
-
 class Scope:
     def __init__(
             self,
@@ -42,7 +39,7 @@ class Scope:
         self.user_modify_playback_state = user_modify_playback_state
         self.user_read_recently_played = user_read_recently_played
 
-    def get_permissions(self) -> List[str]:
+    def get_permissions(self) -> list[str]:
         permissions = []
         if self.user_read_playback_position:
             permissions.append("user-read-playback-position")

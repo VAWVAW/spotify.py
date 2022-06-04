@@ -1,5 +1,3 @@
-from typing import List
-
 from .connection import Connection
 from .cache import Cache
 from .uri import URI
@@ -60,7 +58,7 @@ class Track(Playable):
         return self._album
 
     @property
-    async def artists(self) -> List[Artist]:
+    async def artists(self) -> list[Artist]:
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists.copy()
