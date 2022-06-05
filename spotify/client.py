@@ -12,6 +12,7 @@ from .scope import Scope
 from .episode import Episode
 from .album import Album
 from .artist import Artist
+from .show import Show
 
 
 class SpotifyClient:
@@ -241,7 +242,7 @@ class SpotifyClient:
         search for item
 
         :param query: string to search
-        :param element_type: comma-separated list of return types; possible values: "album" "artist" "playlist" "track" "episode" ("show")
+        :param element_type: comma-separated list of return types; possible values: "album" "artist" "playlist" "track" "episode" "show"
         :param limit: number of results to return per type
         :param offset: offset of results per type
         :return: dict with types as keys and lists as elements
@@ -354,6 +355,21 @@ class SpotifyClient:
         :return: list of the found users
         """
         elements = (await self.search(query=query, element_type="user", offset=offset, limit=limit))["users"]
+        for element in elements:
+            assert isinstance(element, User), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_show(self, query: str, limit: int = 5, offset: int = 0) -> list[Show]:
+        """
+        search for show
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found users
+        """
+        elements = (await self.search(query=query, element_type="show", offset=offset, limit=limit))["shows"]
         for element in elements:
             assert isinstance(element, User), "got invalid search result"
         # noinspection PyTypeChecker

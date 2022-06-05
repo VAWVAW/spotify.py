@@ -33,6 +33,7 @@ from .uri import URI
 from .album import Album
 from .artist import Artist
 from .episode import Episode
+from .show import Show
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

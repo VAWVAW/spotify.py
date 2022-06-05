@@ -22,6 +22,7 @@ class Cache:
             "track": {},
             "album": {},
             "artist": {},
+            "show": {},
             "user": {}
         }
 
@@ -31,6 +32,7 @@ class Cache:
             "track": Track,
             "album": Album,
             "artist": Artist,
+            "show": Show,
             "user": User
         }
 
@@ -165,6 +167,24 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type["user"][uri]
 
+    def get_episode(self, uri: URI, name: str = None) -> Episode:
+        assert isinstance(uri, URI)
+
+        if uri not in self._by_type["episode"].keys():
+            to_add = Show(uri=uri, cache=self, name=name)
+            self._by_type["episode"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
+        return self._by_type["episode"][uri]
+
+    def get_show(self, uri: URI, name: str = None) -> Show:
+        assert isinstance(uri, URI)
+
+        if uri not in self._by_type["show"].keys():
+            to_add = Show(uri=uri, cache=self, name=name)
+            self._by_type["show"][uri] = to_add
+            self._by_uri[str(uri)] = to_add
+        return self._by_type["show"][uri]
+
     def load_token(self, client_id: str = None, client_secret: str = None, refresh_token: str = None, scope: Scope = Scope(), show_dialog: bool = False, token: str = None, expires: int = 0):
         if self._cache_dir is not None:
             try:
@@ -205,3 +225,4 @@ from .track import Track
 from .abc import Cacheable
 from .artist import Artist
 from .album import Album
+from .show import Show
