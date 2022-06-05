@@ -12,11 +12,13 @@ class Album(PlayContext):
 
         self._artists = None
         self._items = None
+        self._images = None
 
     async def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "name": self._name,
+            "images": self._images,
             "artists": [
                 {
                     "uri": str(await artist.uri),
@@ -73,6 +75,7 @@ class Album(PlayContext):
         assert str(self._uri) == data["uri"]
 
         self._name = data["name"]
+        self._images = data["images"]
         self._items = []
         self._artists = []
 
@@ -81,7 +84,7 @@ class Album(PlayContext):
                 continue
             self._items.append(self._cache.get_track(uri=URI(track["uri"]), name=track["name"]))
 
-        for artist in data["tracks"]["artists"]:
+        for artist in data["artists"]:
             if artist is None:
                 continue
             self._items.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
@@ -97,5 +100,11 @@ class Album(PlayContext):
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists.copy()
+
+    @property
+    async def images(self) -> list[dict[str, (str, int, None)]]:
+        if self._images is None:
+            await self._cache.load(uri=self._uri)
+        return self._images.copy()
 
     # TODO add search

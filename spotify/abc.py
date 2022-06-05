@@ -36,7 +36,10 @@ class Cacheable(ABC):
 
 
 class Playable(Cacheable, ABC):
-    pass
+    @property
+    @abstractmethod
+    async def images(self) -> list[dict[str, (int, str, None)]]:
+        pass
 
 
 class PlayContext(Cacheable, ABC):

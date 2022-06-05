@@ -16,6 +16,7 @@ class Playlist(PlayContext):
         self._owner = None
         self._public = None
         self._items = None
+        self._images = None
 
     async def to_dict(self) -> dict:
         return {
@@ -26,6 +27,7 @@ class Playlist(PlayContext):
                     "uri": str(await self._owner.uri),
                     "display_name": await self._owner.name
                 },
+            "images": self._images,
             "snapshot_id": self._snapshot_id,
             "name": self._name,
             "public": self._public,
@@ -53,7 +55,7 @@ class Playlist(PlayContext):
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
             "playlists/{playlist_id}".format(playlist_id=uri.id),
-            fields="uri,description,name,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri)))",
+            fields="uri,description,name,images,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri)))",
             offset=offset,
             limit=limit
         )
@@ -90,6 +92,7 @@ class Playlist(PlayContext):
         self._description = data["description"]
         self._public = data["public"]
         self._owner = self._cache.get_user(uri=URI(data["owner"]["uri"]), display_name=data["owner"]["display_name"])
+        self._images = data["images"]
         self._items = []
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
@@ -128,6 +131,12 @@ class Playlist(PlayContext):
         if self._items is None:
             await self._cache.load(uri=self._uri)
         return self._items.copy()
+
+    @property
+    async def images(self) -> list[dict[str, (str, int, None)]]:
+        if self._images is None:
+            await self._cache.load(uri=self._uri)
+        return self._images.copy()
 
     async def search(self, *strings: str) -> list[Playable]:
         if self._items is None:

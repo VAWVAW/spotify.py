@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .connection import Connection
 from .cache import Cache
 from .uri import URI
@@ -52,7 +54,7 @@ class Track(Playable):
             self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
-    async def album(self) -> dict:
+    async def album(self) -> Album:
         if self._album is None:
             await self._cache.load(uri=self._uri)
         return self._album
@@ -62,3 +64,10 @@ class Track(Playable):
         if self._artists is None:
             await self._cache.load(uri=self._uri)
         return self._artists.copy()
+
+    @property
+    async def images(self) -> list[dict[str, (int, str, None)]]:
+        return await (await self.album).images
+
+
+from .album import Album

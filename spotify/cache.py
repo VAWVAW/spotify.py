@@ -86,6 +86,7 @@ class Cache:
             self._me = Me(cache=self)
         return self._me
 
+    # noinspection PyTypeChecker
     async def load_me(self):
         element = await self.get_me()
 
