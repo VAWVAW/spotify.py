@@ -6,7 +6,7 @@ class URI:
     def __init__(self, uri_string: str):
         assert isinstance(uri_string, str)
         uri_elements = uri_string.split(":")
-        assert len(uri_elements) == 3 and uri_elements[0] == "spotify", 'invalid uri string (not in format "spotify:<type>:<id>")'
+        assert len(uri_elements) == 3 and uri_elements[0] == "spotify", 'invalid uri string (not in format "spotify:<element_type>:<id>")'
 
         self._type = uri_elements[1]
         self._id = uri_elements[2]

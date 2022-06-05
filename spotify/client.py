@@ -6,9 +6,12 @@ from .user import User
 from .playlist import Playlist
 from .track import Track
 from .uri import URI
-from .abc import Playable, PlayContext
+from .abc import Playable, PlayContext, Cacheable
 from .errors import BadRequestException
 from .scope import Scope
+from .episode import Episode
+from .album import Album
+from .artist import Artist
 
 
 class SpotifyClient:
@@ -232,3 +235,142 @@ class SpotifyClient:
         endpoint = "me/player"
 
         return await self._connection.make_request(method="GET", endpoint=endpoint)
+
+    async def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
+        """
+        search for item
+
+        :param query: string to search
+        :param element_type: comma-separated list of return types; possible values: "album" "artist" "playlist" "track" "episode" ("show")
+        :param limit: number of results to return per type
+        :param offset: offset of results per type
+        :return: dict with types as keys and lists as elements
+        """
+        assert isinstance(query, str)
+        assert isinstance(element_type, str)
+        assert isinstance(limit, int)
+        assert isinstance(offset, int)
+
+        endpoint = self._connection.add_parameters_to_endpoint(
+            "search",
+            offset=offset,
+            limit=limit,
+            q=query,
+            type=element_type
+        )
+        data = await self._connection.make_request(method="GET", endpoint=endpoint)
+        types = element_type.split(",")
+        ret = {}
+        for element_type in types:
+            element_type += "s"
+            ret[element_type] = []
+            for element in data[element_type]["items"]:
+                ret[element_type].append(self._cache.get_element(uri=URI(element["uri"])))
+                ret[element_type][-1].load_dict(data=element)
+        return ret
+
+    async def search_track(self, query: str, limit: int = 5, offset: int = 0) -> list[Track]:
+        """
+        search for track
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found tracks
+        """
+        elements = (await self.search(query=query, element_type="track", offset=offset, limit=limit))["tracks"]
+        for element in elements:
+            assert isinstance(element, Track), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_episode(self, query: str, limit: int = 5, offset: int = 0) -> list[Episode]:
+        """
+        search for episode
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found episodes
+        """
+        elements = (await self.search(query=query, element_type="episode", offset=offset, limit=limit))["episodes"]
+        for element in elements:
+            assert isinstance(element, Episode), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_playlist(self, query: str, limit: int = 5, offset: int = 0) -> list[Playlist]:
+        """
+        search for playlist
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found playlists
+        """
+        elements = (await self.search(query=query, element_type="playlist", offset=offset, limit=limit))["playlists"]
+        for element in elements:
+            assert isinstance(element, Playlist), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_album(self, query: str, limit: int = 5, offset: int = 0) -> list[Album]:
+        """
+        search for album
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found albums
+        """
+        elements = (await self.search(query=query, element_type="album", offset=offset, limit=limit))["albums"]
+        for element in elements:
+            assert isinstance(element, Album), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_artist(self, query: str, limit: int = 5, offset: int = 0) -> list[Artist]:
+        """
+        search for artist
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found artists
+        """
+        elements = (await self.search(query=query, element_type="artist", offset=offset, limit=limit))["artists"]
+        for element in elements:
+            assert isinstance(element, Artist), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_user(self, query: str, limit: int = 5, offset: int = 0) -> list[User]:
+        """
+        search for user
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found users
+        """
+        elements = (await self.search(query=query, element_type="user", offset=offset, limit=limit))["users"]
+        for element in elements:
+            assert isinstance(element, User), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
+
+    async def search_playable(self, query: str, limit: int = 5, offset: int = 0) -> list[Playable]:
+        """
+        search for playable
+
+        :param query: string to search
+        :param limit: number of results to return
+        :param offset: offset of results
+        :return: list of the found playables
+        """
+        data = await self.search(query=query, element_type="track,episode", offset=offset, limit=limit)
+        elements = data["tracks"] + data["episodes"]
+        for element in elements:
+            assert isinstance(element, Playable), "got invalid search result"
+        # noinspection PyTypeChecker
+        return elements
