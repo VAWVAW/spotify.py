@@ -93,7 +93,7 @@ class SpotifyClient:
             # resume whatever was playing
             await self._connection.make_request(method="PUT", endpoint=endpoint)
 
-    async def pause(self, device_id: str = None) -> None:
+    async def pause(self, device_id: str = None):
         """
         pause playback
 
@@ -105,6 +105,32 @@ class SpotifyClient:
         endpoint = self._connection.add_parameters_to_endpoint("me/player/pause", device_id=device_id)
 
         await self._connection.make_request(method="PUT", endpoint=endpoint)
+
+    async def next(self, device_id: str = None):
+        """
+        skip to next track in queue
+
+        :param device_id:
+        :raises SpotifyException: errors according to http response status
+        """
+        assert isinstance(device_id, (str | None))
+
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/next", device_id=device_id)
+
+        await self._connection.make_request(method="POST", endpoint=endpoint)
+
+    async def prev(self, device_id: str = None):
+        """
+        skip to previous track in queue
+
+        :param device_id:
+        :raises SpotifyException: errors according to http response status
+        """
+        assert isinstance(device_id, (str | None))
+
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/previous", device_id=device_id)
+
+        await self._connection.make_request(method="POST", endpoint=endpoint)
 
     async def set_playback_shuffle(self, state: bool = True, device_id: str = None) -> None:
         """
