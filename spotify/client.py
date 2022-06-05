@@ -42,7 +42,7 @@ class SpotifyClient:
 
         self._connection._token = token
 
-    async def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None) -> None:
+    async def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None):
         """
         resume playback or play specified resource\n
         only one of elements and context may be specified\n\n
@@ -132,7 +132,7 @@ class SpotifyClient:
 
         await self._connection.make_request(method="POST", endpoint=endpoint)
 
-    async def set_playback_shuffle(self, state: bool = True, device_id: str = None) -> None:
+    async def set_playback_shuffle(self, state: bool = True, device_id: str = None):
         """
         set shuffle mode on the specified device
 
@@ -147,7 +147,7 @@ class SpotifyClient:
 
         await self._connection.make_request(method="PUT", endpoint=endpoint)
 
-    async def add_to_queue(self, element: (URI | Playable), device_id: str = None) -> None:
+    async def add_to_queue(self, element: (URI | Playable), device_id: str = None):
         """
         add uri to queue \n\n
         example: \n
@@ -163,7 +163,7 @@ class SpotifyClient:
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else await element.uri))
         await self._connection.make_request(method="POST", endpoint=endpoint)
 
-    async def close(self) -> None:
+    async def close(self):
         """
         clean session and exit
         """
@@ -178,7 +178,7 @@ class SpotifyClient:
         data = await self._connection.make_request(method="GET", endpoint=endpoint)
         return data["devices"]
 
-    async def transfer_playback(self, device_id: str, play: bool = False) -> None:
+    async def transfer_playback(self, device_id: str, play: bool = False):
         """
         transfer playback to new device
         :param device_id: id of targeted device
