@@ -11,7 +11,7 @@ A basic wrapper for the Spotify API.
 
 """
 
-__title__ = 'spotify'
+__title__ = 'spotifython'
 __author__ = 'VAWVAW'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present VAWVAW'
