@@ -15,13 +15,13 @@ from .artist import Artist
 from .show import Show
 
 
-class SpotifyClient:
+class Client:
     def __init__(self, cache_dir: str = None, client_id: str = None, client_secret: str = None, scope: Scope = None, show_dialog: bool = False):
         """
-        You need to request a token using SpotifyClient.request_token() to interact with the api.
+        You need to request a token using Client.request_token() to interact with the api.
 
         You need to register an application at https://developer.spotify.com/dashboard/applications and edit the settings to add "http://localhost:2342/" to the redirect uris to allow this library to request a token.
-        If you want to use a token you generated yourself refer to SpotifyClient.set_token().
+        If you want to use a token you generated yourself refer to Client.set_token().
         :param client_id: the Client ID of the application
         :param client_secret: the Client Secret of the application (click on "SHOW CLIENT SECRET")
         :param scope: the Scope object reflecting the permissions you need
@@ -51,8 +51,8 @@ class SpotifyClient:
         resume playback or play specified resource\n
         only one of elements and context may be specified\n\n
         examples:\n
-        await SpotifyClient.play()\n
-        await SpotifyClient.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
+        await Client.play()\n
+        await Client.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
 
         :param elements: list of spotify uris or Playable types to play (leave at None to resume playing)
         :param context: uri or PlayContext to use as context (e.g. playlist or album)
