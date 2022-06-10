@@ -23,7 +23,7 @@ __path__ = __import__('pkgutil').extend_path(__path__, __name__)
 from collections import namedtuple
 import logging
 
-from .client import SpotifyClient
+from .client import Client
 from .user import User
 from .errors import *
 from .scope import Scope
