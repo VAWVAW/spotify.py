@@ -13,21 +13,26 @@ Installing
 **python 3.10 or higher is required**
 
 .. code:: sh
+
     # Linux/macOS
     python3 -m pip install -U spotifython
 .. code:: sh
+
     # Windows
     py -3 -m pip install -U spotifython
 To install the development version, run:
+
 .. code:: sh
+
     $ git clone https://github.com/vawvaw/spotifython
-    $ cd spotifython
+    $ cd spotipython
     $ python3 -m pip install -U .
 
 
 Quick Example
 -------------
 .. code:: py
+
     import spotifython
     import asyncio
 
