@@ -1,6 +1,6 @@
 import setuptools
 
-with open("README.md", "r", encoding="utf-8") as f:
+with open("README.rst", "r", encoding="utf-8") as f:
     readme = f.read()
 
 with open('requirements.txt') as f:
@@ -13,7 +13,7 @@ setuptools.setup(
     author_email="vawvaw@vaw-valentin.de",
     description="An async caching python interface to readonly parts of the spotify api.",
     long_description=readme,
-    long_description_content_type="text/markdown",
+    long_description_content_type="text/x-rst",
     url="https://github.com/vawvaw/spotifython",
     project_urls={
         "Bug Tracker": "https://github.com/vawvaw/spotifython/issues",
