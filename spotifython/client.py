@@ -8,43 +8,34 @@ from .track import Track
 from .uri import URI
 from .abc import Playable, PlayContext, Cacheable
 from .errors import BadRequestException
-from .scope import Scope
 from .episode import Episode
 from .album import Album
 from .artist import Artist
 from .show import Show
+from .authentication import Authentication
 
 
 class Client:
-    def __init__(self, cache_dir: str = None, client_id: str = None, client_secret: str = None, scope: Scope = None, show_dialog: bool = False):
+    def __init__(self, authentication: Authentication, cache_dir: str = None):
         """
         You need to request a token using Client.request_token() to interact with the api.
 
         You need to register an application at https://developer.spotify.com/dashboard/applications and edit the settings to add "http://localhost:2342/" to the redirect uris to allow this library to request a token.
-        If you want to use a token you generated yourself refer to Client.set_token().
-        :param client_id: the Client ID of the application
-        :param client_secret: the Client Secret of the application (click on "SHOW CLIENT SECRET")
-        :param scope: the Scope object reflecting the permissions you need
-        :param show_dialog: whether to query the user every time a new refresh token is requested
+        :param authentication: Authentication object for client authentication
         :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
         """
         assert isinstance(cache_dir, (str | None))
-        assert isinstance(client_id, str)
-        assert isinstance(client_secret, str)
-        assert isinstance(scope, (Scope | None))
+        assert isinstance(authentication, Authentication)
 
-        self._connection = Connection()
+        self._connection = Connection(authentication=authentication)
         self._cache = Cache(connection=self._connection, cache_dir=cache_dir)
-        self._cache.load_token(client_id=client_id, client_secret=client_secret, scope=scope, show_dialog=show_dialog)
 
-    async def set_token(self, token: str):
+    def get_authentication_data(self) -> dict[str, (str | int | None)]:
         """
-        use this method to use a token you generated elsewhere
-        :param token: the Bearer token to use
+        Dump the authentication data for safe caching
+        :return: { "client_id": client_id, "client_secret": client_secret, "scope": str(scope), "refresh_token": refresh_token, "show_dialog": show_dialog, "token": token, "expires": int(expires) }
         """
-        assert isinstance(token, str)
-
-        self._connection._token = token
+        return self._connection.dump_token_data()
 
     async def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None):
         """
@@ -172,7 +163,6 @@ class Client:
         clean session and exit
         """
         await self._connection.close()
-        self._cache.close()
 
     async def get_devices(self) -> list[dict[str, (str | bool | int)]]:
         """

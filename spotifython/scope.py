@@ -80,11 +80,12 @@ class Scope:
         return permissions
 
     def __str__(self):
-        permissions = self.get_permissions()
+        permissions = sorted(self.get_permissions())
         return " ".join(permissions)
 
-    def is_equal(self, scope_str: str) -> bool:
-        permissions = sorted(scope_str.split(" "))
-        own_permissions = sorted(self.get_permissions())
+    @staticmethod
+    def is_equal(scope_str1: str, scope_str2: str) -> bool:
+        permissions1 = sorted(scope_str1.split(" "))
+        permissions2 = sorted(scope_str2.split(" "))
 
-        return permissions == own_permissions
+        return permissions1 == permissions2

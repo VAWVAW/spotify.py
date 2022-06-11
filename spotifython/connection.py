@@ -4,27 +4,22 @@ import json
 import base64
 import time
 
-from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError
+from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData
+from .authentication import Authentication
 from .scope import Scope
 
 
 class Connection:
-    def __init__(self):
+    def __init__(self, authentication: Authentication):
         self.session = aiohttp.ClientSession()
-        self._token = None
-        self._expires = 0
-        self._client_id = None
-        self._client_secret = None
-        self._refresh_token = None
-        self._show_dialog = False
-        self._scope = ""
+        self._authentication = authentication
 
     def _get_header(self) -> dict:
         return {
             "Accept": "application/json",
             "Content-Type": "application/json",
             "Authorization":
-                "Bearer " + self._token
+                "Bearer " + self._authentication.token
         }
 
     async def _evaluate_response(self, response: aiohttp.ClientResponse) -> dict | None:
@@ -63,7 +58,7 @@ class Connection:
 
     async def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
-        if self._token is None:
+        if self._authentication.token is None:
             await self._get_token()
         response = await self.session.request(method, url, data=data, headers=self._get_header())
         try:
@@ -90,10 +85,15 @@ class Connection:
     async def close(self):
         await self.session.close()
 
-    async def _request_token(self) -> dict:
+    async def _request_token(self):
         """
         :return: {'token_type': 'Bearer', 'scope': scope_str, 'refresh_token': refresh_token}
         """
+        if self._authentication.client_id is None or self._authentication.client_secret is None:
+            raise InvalidTokenData("client_id and client_secret are needed to request access and refresh token")
+        if self._authentication.scope == 'None':
+            raise InvalidTokenData("a scope is needed to request access and refresh token")
+
         import random
         import string
         import webbrowser
@@ -107,11 +107,11 @@ class Connection:
         # spotify query that the user needs to accept to gain the access token
         endpoint = self.add_parameters_to_endpoint(
             "https://accounts.spotify.com/authorize",
-            client_id=self._client_id,
+            client_id=self._authentication.client_id,
             response_type="code",
-            scope=str(self._scope),
+            scope=str(self._authentication.scope),
             state=state,
-            show_dialog=self._show_dialog,
+            show_dialog=self._authentication.show_dialog,
             redirect_uri=redirect_uri
         )
         # open the url in the (hopefully) default browser
@@ -153,7 +153,7 @@ class Connection:
         form.add_field("code", auth_code)
         form.add_field("redirect_uri", redirect_uri)
 
-        encoded = base64.b64encode(bytes(self._client_id + ":" + self._client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -166,23 +166,27 @@ class Connection:
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
 
-        self._token = data["access_token"]
-        self._expires = time.time() + data["expires_in"]
-        self._refresh_token = data["refresh_token"]
+        self._authentication.token = data["access_token"]
+        self._authentication.expires = time.time() + data["expires_in"]
+        self._authentication.refresh_token = data["refresh_token"]
 
-        return {"scope": data["scope"], "refresh_token": data["refresh_token"]}
+        self._authentication.scope = data["scope"]
 
-    async def _refresh_access_token(self) -> dict:
+    async def _refresh_access_token(self):
         """
         make request to spotify to get a new Bearer from the refresh token
         :return: {'scope': scope_str}
         """
+        if self._authentication.client_id is None or self._authentication.client_secret is None:
+            raise InvalidTokenData("client_id and client_secret are needed to refresh the access token")
+        if self._authentication.scope == 'None':
+            raise InvalidTokenData("a scope is needed to refresh the access token")
 
         form = aiohttp.FormData()
         form.add_field("grant_type", "refresh_token")
-        form.add_field("refresh_token", self._refresh_token)
+        form.add_field("refresh_token", self._authentication.refresh_token)
 
-        encoded = base64.b64encode(bytes(self._client_id + ":" + self._client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
@@ -195,37 +199,30 @@ class Connection:
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
 
-        self._token = data["access_token"]
-        self._expires = time.time() + data["expires_in"]
+        self._authentication.token = data["access_token"]
+        self._authentication.token_expires = time.time() + data["expires_in"]
 
-        return {"scope": data["scope"]}
+        if not Scope.is_equal(data["scope"], self._authentication.scope):
+            return await self._request_token()
+        self._authentication.scope = data["scope"]
 
     async def _get_token(self):
-        if self._refresh_token is not None:
+        if self._authentication.refresh_token is not None:
             await self._refresh_access_token()
         else:
             await self._request_token()
 
-    def set_token_data(self, client_id: str, client_secret: str, scope: Scope = Scope(), refresh_token: str = None, show_dialog: bool = False, token: str = None, expires: int = 0):
-        self._client_id = client_id
-        self._client_secret = client_secret
-        self._scope = scope
-        self._refresh_token = refresh_token
-        self._show_dialog = show_dialog
-        self._token = token
-        self._expires = expires
-
     def dump_token_data(self) -> dict:
         return {
-            "client_id": self._client_id,
-            "client_secret": self._client_secret,
-            "scope": str(self._scope),
-            "refresh_token": self._refresh_token,
-            "show_dialog": self._show_dialog,
-            "token": self._token,
-            "expires": self._expires
+            "client_id": self._authentication.client_id,
+            "client_secret": self._authentication.client_secret,
+            "scope": str(self._authentication.scope),
+            "refresh_token": self._authentication.refresh_token,
+            "show_dialog": self._authentication.show_dialog,
+            "token": self._authentication.token,
+            "expires": self._authentication.token_expires
         }
 
     @property
     def is_expired(self) -> bool:
-        return self._expires < time.time()
+        return self._authentication.token_expires < time.time()

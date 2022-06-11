@@ -7,7 +7,6 @@ import os.path
 from .connection import Connection
 from .uri import URI
 from .errors import ElementOutdated
-from .scope import Scope
 
 
 class Cache:
@@ -184,38 +183,6 @@ class Cache:
             self._by_type["show"][uri] = to_add
             self._by_uri[str(uri)] = to_add
         return self._by_type["show"][uri]
-
-    def load_token(self, client_id: str = None, client_secret: str = None, refresh_token: str = None, scope: Scope = Scope(), show_dialog: bool = False, token: str = None, expires: int = 0):
-        if self._cache_dir is not None:
-            try:
-                with open(os.path.join(self._cache_dir, "token"), "r") as in_file:
-                    cached = json.load(in_file)
-
-                # load cached data if needed
-                if client_id is None and cached["client_id"] is not None:
-                    client_id = cached["client_id"]
-                if client_secret is None and cached["client_secret"] is not None:
-                    client_secret = cached["client_secret"]
-                if refresh_token is None and cached["refresh_token"] is not None:
-                    refresh_token = cached["refresh_token"]
-                if token is None and cached["token"] is not None:
-                    token = cached["token"]
-                    expires = cached["expires"]
-
-                if not scope.is_equal(cached["scope"]):
-                    refresh_token = None
-
-            except (FileNotFoundError, json.JSONDecodeError, KeyError):
-                # don't use cached data and recache
-                pass
-
-        self._connection.set_token_data(client_id=client_id, client_secret=client_secret, refresh_token=refresh_token, scope=scope, show_dialog=show_dialog, token=token, expires=expires)
-
-    def close(self):
-        if self._cache_dir is None:
-            return
-        with open(os.path.join(self._cache_dir, "token"), "w") as out_file:
-            json.dump(self._connection.dump_token_data(), out_file)
 
 
 from .user import User, Me

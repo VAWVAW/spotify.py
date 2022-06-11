@@ -24,6 +24,7 @@ from collections import namedtuple
 import logging
 
 from .client import Client
+from .authentication import Authentication
 from .user import User
 from .errors import *
 from .scope import Scope

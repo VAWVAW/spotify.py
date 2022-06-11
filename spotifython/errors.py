@@ -32,3 +32,7 @@ class Retry(Exception):
 
 class ElementOutdated(Exception):
     pass
+
+
+class InvalidTokenData(Exception):
+    pass
