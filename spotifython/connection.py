@@ -1,5 +1,4 @@
 import requests
-import asyncio
 import base64
 import time
 
@@ -40,13 +39,13 @@ class Connection:
                 raise NotFoundException(response.text)
             case 429:
                 # rate limit
-                asyncio.sleep(5)
+                time.sleep(5)
                 raise Retry()
             case 500:
                 raise InternalServerError(response.text)
             case 503:
                 # service unavailable
-                asyncio.sleep(1)
+                time.sleep(1)
                 raise Retry()
 
         return response.json()
