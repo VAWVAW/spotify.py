@@ -1,6 +1,5 @@
-import aiohttp
+import requests
 import asyncio
-import json
 import base64
 import time
 
@@ -11,7 +10,6 @@ from .scope import Scope
 
 class Connection:
     def __init__(self, authentication: Authentication):
-        self.session = aiohttp.ClientSession()
         self._authentication = authentication
 
     def _get_header(self) -> dict:
@@ -22,49 +20,46 @@ class Connection:
                 "Bearer " + self._authentication.token
         }
 
-    def _evaluate_response(self, response: aiohttp.ClientResponse) -> dict | None:
-        match response.status:
+    def _evaluate_response(self, response: requests.Response) -> dict | None:
+        match response.status_code:
             case 204:
                 # no content
                 return None
             case 304:
-                raise NotModified(response.text())
+                raise NotModified(response.text)
             case 400:
-                raise BadRequestException(json.loads(response.text()))
+                raise BadRequestException(response.text)
             case 401:
                 if self.is_expired:
                     self._get_token()
                     raise Retry()
-                raise InvalidTokenException(json.loads(response.text()))
+                raise InvalidTokenException(response.text)
             case 403:
-                raise ForbiddenException(json.loads(response.text()))
+                raise ForbiddenException(response.text)
             case 404:
-                raise NotFoundException(json.loads(response.text()))
+                raise NotFoundException(response.text)
             case 429:
                 # rate limit
                 asyncio.sleep(5)
                 raise Retry()
             case 500:
-                raise InternalServerError(response.text())
+                raise InternalServerError(response.text)
             case 503:
                 # service unavailable
                 asyncio.sleep(1)
                 raise Retry()
 
-        try:
-            return json.loads(response.text())
-        except json.decoder.JSONDecodeError:
-            return None
+        return response.json()
 
     def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
         if self._authentication.token is None:
             self._get_token()
-        response = self.session.request(method, url, data=data, headers=self._get_header())
+        response = requests.request(method, url, data=data, headers=self._get_header())
         try:
             data = self._evaluate_response(response)
         except Retry:
-            data = self._evaluate_response(self.session.request(method, url, data=data, headers=self._get_header()))
+            data = self._evaluate_response(requests.request(method, url, data=data, headers=self._get_header()))
         return data
 
     @staticmethod
@@ -81,9 +76,6 @@ class Connection:
         endpoint += "?"
         endpoint += "&".join(param_strings)
         return endpoint
-
-    def close(self):
-        self.session.close()
 
     def _request_token(self):
         """
@@ -148,10 +140,11 @@ class Connection:
         auth_code = query["code"]
 
         # make request to spotify to get a Bearer from the basic token
-        form = aiohttp.FormData()
-        form.add_field("grant_type", "authorization_code")
-        form.add_field("code", auth_code)
-        form.add_field("redirect_uri", redirect_uri)
+        form = {
+            "grant_type": "authorization_code",
+            "code": auth_code,
+            "redirect_uri": redirect_uri,
+        }
 
         encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
 
@@ -160,8 +153,8 @@ class Connection:
             "Authorization": "Basic " + encoded
         }
 
-        response = self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
-        data = json.loads(response.text())
+        response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
+        data = response.json()
 
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
@@ -182,9 +175,10 @@ class Connection:
         if self._authentication.scope == 'None':
             raise InvalidTokenData("a scope is needed to refresh the access token")
 
-        form = aiohttp.FormData()
-        form.add_field("grant_type", "refresh_token")
-        form.add_field("refresh_token", self._authentication.refresh_token)
+        form = {
+            "grant_type": "refresh_token",
+            "refresh_token": self._authentication.refresh_token
+        }
 
         encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
 
@@ -193,8 +187,8 @@ class Connection:
             "Authorization": "Basic " + encoded
         }
 
-        response = self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
-        data = json.loads(response.text())
+        response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
+        data = response.json()
 
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
