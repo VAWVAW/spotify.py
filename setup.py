@@ -22,7 +22,6 @@ setuptools.setup(
     license="GPLv3",
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Framework :: aiohttp",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
