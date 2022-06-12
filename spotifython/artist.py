@@ -8,7 +8,7 @@ class Artist(Cacheable):
     def __init__(self, uri: URI, cache: Cache, name: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "name": self._name,
             "uri": str(self._uri)
@@ -21,7 +21,7 @@ class Artist(Cacheable):
         self._name = data["name"]
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
 
@@ -29,4 +29,4 @@ class Artist(Cacheable):
             "artists/{artist_id}".format(artist_id=uri.id),
             fields="name,uri"
         )
-        return await connection.make_request("GET", endpoint)
+        return connection.make_request("GET", endpoint)

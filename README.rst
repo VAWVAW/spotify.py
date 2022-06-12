@@ -5,7 +5,6 @@ A readonly wrapper for the Spotify API that relies on heavy caching to minimise 
 
 Key Features
 ------------
-- using ``async`` and ``await``
 - caching requested data (note that non public data will be cached)
 
 Installing
@@ -35,9 +34,8 @@ Quick Example
 .. code:: py
 
     import spotifython
-    import asyncio
 
-    async def main():
+    if __name__ == "__main__":
         scope = spotifython.Scope(playlist_read_private=True, user_library_read=True)
         authentication = spotifython.Authentication(
             client_id="client_id",
@@ -46,13 +44,11 @@ Quick Example
         )
         client = spotifython.Client(authentication=authentication)
 
-        playlists = await client.user_playlists()
+        playlists = client.user_playlists()
         for playlist in playlists:
-            print(await playlist.name)
+            print(playlist.name)
 
-        await client.close()
-
-    asyncio.run(main())
+        client.close()
 
 Links
 -----

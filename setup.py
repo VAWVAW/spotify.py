@@ -11,7 +11,7 @@ setuptools.setup(
     version="0.1.2",
     author="VAWVAW",
     author_email="vawvaw@vaw-valentin.de",
-    description="An async caching python interface to readonly parts of the spotify api.",
+    description="An caching python interface to readonly parts of the spotify api.",
     long_description=readme,
     long_description_content_type="text/x-rst",
     url="https://github.com/vawvaw/spotifython",
@@ -22,7 +22,6 @@ setuptools.setup(
     license="GPLv3",
     classifiers=[
         "Development Status :: 3 - Alpha",
-        "Framework :: aiohttp",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",

@@ -48,7 +48,7 @@ class Cache:
 
         return self._by_uri[str(uri)]
 
-    async def load(self, uri: URI):
+    def load(self, uri: URI):
         assert isinstance(uri, URI)
 
         element = self.get_element(uri)
@@ -62,17 +62,17 @@ class Cache:
                     data["fetched"] = False
             except (FileNotFoundError, json.JSONDecodeError):
                 # request new data
-                data = await element.make_request(uri=uri, connection=self._connection)
+                data = element.make_request(uri=uri, connection=self._connection)
                 data["fetched"] = True
         else:
-            data = await element.make_request(uri=uri, connection=self._connection)
+            data = element.make_request(uri=uri, connection=self._connection)
             data["fetched"] = True
 
         try:
             element.load_dict(data)
         except (KeyError, ElementOutdated):
             # maybe cache is outdated
-            data = await element.make_request(uri=uri, connection=self._connection)
+            data = element.make_request(uri=uri, connection=self._connection)
             data["fetched"] = True
             element.load_dict(data)
 
@@ -80,16 +80,16 @@ class Cache:
         if data["fetched"] and self._cache_dir is not None:
             path = os.path.join(self._cache_dir, str(uri))
             with open(path, "w") as out_file:
-                json.dump(await element.to_dict(), out_file)
+                json.dump(element.to_dict(), out_file)
 
-    async def get_me(self) -> Me:
+    def get_me(self) -> Me:
         if self._me is None:
             self._me = Me(cache=self)
         return self._me
 
     # noinspection PyTypeChecker
-    async def load_me(self):
-        element = await self.get_me()
+    def load_me(self):
+        element = self.get_me()
 
         # try to load from cache
         if self._cache_dir is not None:
@@ -100,17 +100,17 @@ class Cache:
                     data["fetched"] = False
             except (FileNotFoundError, json.JSONDecodeError):
                 # request new data
-                data = await element.make_request(uri=None, connection=self._connection)
+                data = element.make_request(uri=None, connection=self._connection)
                 data["fetched"] = True
         else:
-            data = await element.make_request(uri=None, connection=self._connection)
+            data = element.make_request(uri=None, connection=self._connection)
             data["fetched"] = True
 
         try:
             element.load_dict(data)
         except (KeyError, ElementOutdated):
             # maybe cache is outdated
-            data = await element.make_request(uri=None, connection=self._connection)
+            data = element.make_request(uri=None, connection=self._connection)
             data["fetched"] = True
             element.load_dict(data)
 
@@ -118,7 +118,7 @@ class Cache:
         if data["fetched"] and self._cache_dir is not None:
             path = os.path.join(self._cache_dir, "me")
             with open(path, "w") as out_file:
-                json.dump(await element.to_dict(), out_file)
+                json.dump(element.to_dict(), out_file)
 
     # get cached objects and create them if needed
     def get_track(self, uri: URI, name: str = None) -> Track:

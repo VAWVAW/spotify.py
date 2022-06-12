@@ -13,19 +13,19 @@ class Episode(Playable):
         self._images = None
         self._show = None
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "name": self._name,
             "show": {
-                "uri": str(await self._show.uri),
-                "name": await self._show.name
+                "uri": str(self._show.uri),
+                "name": self._show.name
             },
             "images": self._images
         }
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
 
@@ -33,7 +33,7 @@ class Episode(Playable):
             "episodes/{id}".format(id=uri.id),
             fields="uri,name,images,show(uri,name)"
         )
-        return await connection.make_request("GET", endpoint)
+        return connection.make_request("GET", endpoint)
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
@@ -44,15 +44,15 @@ class Episode(Playable):
         self._show = self._cache.get_show(uri=URI(data["show"]["uri"]), name=data["show"]["name"])
 
     @property
-    async def images(self) -> list[dict[str, (str, int, None)]]:
+    def images(self) -> list[dict[str, (str, int, None)]]:
         if self._images is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._images.copy()
 
     @property
-    async def show(self) -> Show:
+    def show(self) -> Show:
         if self._show is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._show
 
 

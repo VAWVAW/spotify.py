@@ -12,13 +12,13 @@ class Cacheable(ABC):
         self._cache = cache
 
     @property
-    async def uri(self) -> URI:
+    def uri(self) -> URI:
         return self._uri
 
     @property
-    async def name(self) -> str:
+    def name(self) -> str:
         if self._name is None:
-            await self._cache.load(self._uri)
+            self._cache.load(self._uri)
         return self._name
 
     @abstractmethod
@@ -26,19 +26,19 @@ class Cacheable(ABC):
         pass
 
     @abstractmethod
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         pass
 
     @staticmethod
     @abstractmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         pass
 
 
 class Playable(Cacheable, ABC):
     @property
     @abstractmethod
-    async def images(self) -> list[dict[str, (int, str, None)]]:
+    def images(self) -> list[dict[str, (int, str, None)]]:
         pass
 
 

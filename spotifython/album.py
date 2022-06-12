@@ -14,23 +14,23 @@ class Album(PlayContext):
         self._items = None
         self._images = None
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "name": self._name,
             "images": self._images,
             "artists": [
                 {
-                    "uri": str(await artist.uri),
-                    "name": await artist.name
+                    "uri": str(artist.uri),
+                    "name": artist.name
                 }
                 for artist in self._artists
             ],
             "tracks": {
                 "items": [
                     {
-                        "uri": str(await item.uri),
-                        "name": await item.name
+                        "uri": str(item.uri),
+                        "name": item.name
                     }
                     for item in self._items
                 ]
@@ -38,7 +38,7 @@ class Album(PlayContext):
         }
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
         assert uri.type == "album"
@@ -51,7 +51,7 @@ class Album(PlayContext):
             limit=limit
         )
 
-        data = await connection.make_request("GET", endpoint)
+        data = connection.make_request("GET", endpoint)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
@@ -62,7 +62,7 @@ class Album(PlayContext):
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_request("GET", endpoint)
+                extra_data = connection.make_request("GET", endpoint)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -89,21 +89,21 @@ class Album(PlayContext):
             self._items.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
-    async def tracks(self) -> list[Track]:
+    def tracks(self) -> list[Track]:
         if self._items is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._items.copy()
 
     @property
-    async def artists(self) -> list[Artist]:
+    def artists(self) -> list[Artist]:
         if self._artists is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._artists.copy()
 
     @property
-    async def images(self) -> list[dict[str, (str, int, None)]]:
+    def images(self) -> list[dict[str, (str, int, None)]]:
         if self._images is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._images.copy()
 
     # TODO add search

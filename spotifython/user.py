@@ -8,16 +8,16 @@ class User(Cacheable):
         super().__init__(uri=uri, cache=cache, name=display_name)
         self._playlists = None
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "display_name": self._name,
             "uri": str(self._uri),
             "playlists": {
                 "items": [
                     {
-                        "uri": str(await playlist.uri),
-                        "snapshot_id": await playlist.snapshot_id,
-                        "name": await playlist.name
+                        "uri": str(playlist.uri),
+                        "snapshot_id": playlist.snapshot_id,
+                        "name": playlist.name
                     }
                     for playlist in self._playlists
                 ]
@@ -39,7 +39,7 @@ class User(Cacheable):
             ))
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
 
@@ -47,7 +47,7 @@ class User(Cacheable):
             "users/{user_id}".format(user_id=uri.id),
             fields="display_name,uri"
         )
-        base = await connection.make_request("GET", endpoint)
+        base = connection.make_request("GET", endpoint)
 
         # get playlists
         offset = 0
@@ -59,7 +59,7 @@ class User(Cacheable):
             fields="items(uri,name,snapshot_id)"
         )
 
-        data = await connection.make_request("GET", endpoint)
+        data = connection.make_request("GET", endpoint)
         # check for long data that needs paging
         if data["next"] is not None:
             while True:
@@ -70,7 +70,7 @@ class User(Cacheable):
                     fields="items(uri,name,snapshot_id)"
                 )
                 offset += limit
-                extra_data = await connection.make_request("GET", endpoint)
+                extra_data = connection.make_request("GET", endpoint)
                 data["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -80,15 +80,15 @@ class User(Cacheable):
         return base
 
     @property
-    async def display_name(self) -> str:
+    def display_name(self) -> str:
         if self._name is None:
-            await self._cache.load(await self.uri)
+            self._cache.load(self.uri)
         return self._name
 
     @property
-    async def playlists(self) -> list[Playlist]:
+    def playlists(self) -> list[Playlist]:
         if self._playlists is None:
-            await self._cache.load(await self.uri)
+            self._cache.load(self.uri)
         return self._playlists.copy()
 
 
@@ -101,14 +101,14 @@ class Me(User):
         self._playlists = None
 
     @staticmethod
-    async def make_request(uri: (URI, None), connection: Connection) -> dict:
+    def make_request(uri: (URI, None), connection: Connection) -> dict:
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
             "me",
             fields="display_name,uri"
         )
-        base = await connection.make_request("GET", endpoint)
+        base = connection.make_request("GET", endpoint)
 
         # get playlists
         offset = 0
@@ -120,7 +120,7 @@ class Me(User):
             fields="items(uri,name,snapshot_id)"
         )
 
-        data = await connection.make_request("GET", endpoint)
+        data = connection.make_request("GET", endpoint)
         # check for long data that needs paging
         if data["next"] is not None:
             while True:
@@ -131,7 +131,7 @@ class Me(User):
                     fields="items(uri,name,snapshot_id)"
                 )
                 offset += limit
-                extra_data = await connection.make_request("GET", endpoint)
+                extra_data = connection.make_request("GET", endpoint)
                 data["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -155,21 +155,21 @@ class Me(User):
             ))
 
     @property
-    async def display_name(self) -> str:
+    def display_name(self) -> str:
         if self._name is None:
-            await self._cache.load_me()
+            self._cache.load_me()
         return self._name
 
     @property
-    async def playlists(self) -> list[Playlist]:
+    def playlists(self) -> list[Playlist]:
         if self._playlists is None:
-            await self._cache.load_me()
+            self._cache.load_me()
         return self._playlists.copy()
 
     @property
-    async def name(self) -> str:
+    def name(self) -> str:
         if self._name is None:
-            await self._cache.load_me()
+            self._cache.load_me()
         return self._name
 
 
