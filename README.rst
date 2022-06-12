@@ -37,7 +37,7 @@ Quick Example
     import spotifython
     import asyncio
 
-    async def main():
+    def main():
         scope = spotifython.Scope(playlist_read_private=True, user_library_read=True)
         authentication = spotifython.Authentication(
             client_id="client_id",
@@ -46,11 +46,11 @@ Quick Example
         )
         client = spotifython.Client(authentication=authentication)
 
-        playlists = await client.user_playlists()
+        playlists = client.user_playlists()
         for playlist in playlists:
-            print(await playlist.name)
+            print(playlist.name)
 
-        await client.close()
+        client.close()
 
     asyncio.run(main())
 

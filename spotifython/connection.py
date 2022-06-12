@@ -22,49 +22,49 @@ class Connection:
                 "Bearer " + self._authentication.token
         }
 
-    async def _evaluate_response(self, response: aiohttp.ClientResponse) -> dict | None:
+    def _evaluate_response(self, response: aiohttp.ClientResponse) -> dict | None:
         match response.status:
             case 204:
                 # no content
                 return None
             case 304:
-                raise NotModified(await response.text())
+                raise NotModified(response.text())
             case 400:
-                raise BadRequestException(json.loads(await response.text()))
+                raise BadRequestException(json.loads(response.text()))
             case 401:
                 if self.is_expired:
-                    await self._get_token()
+                    self._get_token()
                     raise Retry()
-                raise InvalidTokenException(json.loads(await response.text()))
+                raise InvalidTokenException(json.loads(response.text()))
             case 403:
-                raise ForbiddenException(json.loads(await response.text()))
+                raise ForbiddenException(json.loads(response.text()))
             case 404:
-                raise NotFoundException(json.loads(await response.text()))
+                raise NotFoundException(json.loads(response.text()))
             case 429:
                 # rate limit
-                await asyncio.sleep(5)
+                asyncio.sleep(5)
                 raise Retry()
             case 500:
-                raise InternalServerError(await response.text())
+                raise InternalServerError(response.text())
             case 503:
                 # service unavailable
-                await asyncio.sleep(1)
+                asyncio.sleep(1)
                 raise Retry()
 
         try:
-            return json.loads(await response.text())
+            return json.loads(response.text())
         except json.decoder.JSONDecodeError:
             return None
 
-    async def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
+    def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
         if self._authentication.token is None:
-            await self._get_token()
-        response = await self.session.request(method, url, data=data, headers=self._get_header())
+            self._get_token()
+        response = self.session.request(method, url, data=data, headers=self._get_header())
         try:
-            data = await self._evaluate_response(response)
+            data = self._evaluate_response(response)
         except Retry:
-            data = await self._evaluate_response(await self.session.request(method, url, data=data, headers=self._get_header()))
+            data = self._evaluate_response(self.session.request(method, url, data=data, headers=self._get_header()))
         return data
 
     @staticmethod
@@ -82,10 +82,10 @@ class Connection:
         endpoint += "&".join(param_strings)
         return endpoint
 
-    async def close(self):
-        await self.session.close()
+    def close(self):
+        self.session.close()
 
-    async def _request_token(self):
+    def _request_token(self):
         """
         :return: {'token_type': 'Bearer', 'scope': scope_str, 'refresh_token': refresh_token}
         """
@@ -160,8 +160,8 @@ class Connection:
             "Authorization": "Basic " + encoded
         }
 
-        response = await self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
-        data = json.loads(await response.text())
+        response = self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
+        data = json.loads(response.text())
 
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
@@ -172,7 +172,7 @@ class Connection:
 
         self._authentication.scope = data["scope"]
 
-    async def _refresh_access_token(self):
+    def _refresh_access_token(self):
         """
         make request to spotify to get a new Bearer from the refresh token
         :return: {'scope': scope_str}
@@ -193,8 +193,8 @@ class Connection:
             "Authorization": "Basic " + encoded
         }
 
-        response = await self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
-        data = json.loads(await response.text())
+        response = self.session.request("POST", "https://accounts.spotify.com/api/token", data=form, headers=header)
+        data = json.loads(response.text())
 
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
@@ -203,14 +203,14 @@ class Connection:
         self._authentication.token_expires = time.time() + data["expires_in"]
 
         if not Scope.is_equal(data["scope"], self._authentication.scope):
-            return await self._request_token()
+            return self._request_token()
         self._authentication.scope = data["scope"]
 
-    async def _get_token(self):
+    def _get_token(self):
         if self._authentication.refresh_token is not None:
-            await self._refresh_access_token()
+            self._refresh_access_token()
         else:
-            await self._request_token()
+            self._request_token()
 
     def dump_token_data(self) -> dict:
         return {

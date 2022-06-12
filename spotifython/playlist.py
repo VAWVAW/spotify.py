@@ -18,14 +18,14 @@ class Playlist(PlayContext):
         self._items = None
         self._images = None
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "description": self._description,
             "owner":
                 {
-                    "uri": str(await self._owner.uri),
-                    "display_name": await self._owner.name
+                    "uri": str(self._owner.uri),
+                    "display_name": self._owner.name
                 },
             "images": self._images,
             "snapshot_id": self._snapshot_id,
@@ -36,8 +36,8 @@ class Playlist(PlayContext):
                     {
                         "added_at": item["added_at"],
                         "track":{
-                            "uri": str(await item["track"].uri),
-                            "name": await item["track"].name
+                            "uri": str(item["track"].uri),
+                            "name": item["track"].name
                         }
                     }
                     for item in self._items
@@ -46,7 +46,7 @@ class Playlist(PlayContext):
         }
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
         assert uri.type == "playlist"
@@ -60,7 +60,7 @@ class Playlist(PlayContext):
             limit=limit
         )
 
-        data = await connection.make_request("GET", endpoint)
+        data = connection.make_request("GET", endpoint)
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
@@ -72,7 +72,7 @@ class Playlist(PlayContext):
                     offset=offset,
                     limit=limit
                 )
-                extra_data = await connection.make_request("GET", endpoint)
+                extra_data = connection.make_request("GET", endpoint)
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -103,48 +103,48 @@ class Playlist(PlayContext):
             })
 
     @property
-    async def description(self) -> str:
+    def description(self) -> str:
         if self._description is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._description
 
     @property
-    async def owner(self) -> User:
+    def owner(self) -> User:
         if self._owner is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._owner
 
     @property
-    async def snapshot_id(self) -> str:
+    def snapshot_id(self) -> str:
         if self._snapshot_id is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._snapshot_id
 
     @property
-    async def public(self) -> bool:
+    def public(self) -> bool:
         if self._public is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._public
 
     @property
-    async def items(self) -> list[dict[str, (Playable | str)]]:
+    def items(self) -> list[dict[str, (Playable | str)]]:
         if self._items is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._items.copy()
 
     @property
-    async def images(self) -> list[dict[str, (str, int, None)]]:
+    def images(self) -> list[dict[str, (str, int, None)]]:
         if self._images is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._images.copy()
 
-    async def search(self, *strings: str) -> list[Playable]:
+    def search(self, *strings: str) -> list[Playable]:
         if self._items is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         results = []
         strings = [string.lower() for string in strings]
         for item in self._items:
-            song_title = (await item["track"].name).lower()
+            song_title = (item["track"].name).lower()
 
             do_append = True
             for string in strings:

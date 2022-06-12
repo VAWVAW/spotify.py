@@ -14,25 +14,25 @@ class Track(Playable):
         self._album = None
         self._artists = None
 
-    async def to_dict(self) -> dict:
+    def to_dict(self) -> dict:
         return {
             "uri": str(self._uri),
             "name": self._name,
             "album": {
-                "name": await self._album.name,
-                "uri": str(await self._album.uri)
+                "name": self._album.name,
+                "uri": str(self._album.uri)
             },
             "artists": [
                 {
-                    "uri": str(await artist.uri),
-                    "name": await artist.name
+                    "uri": str(artist.uri),
+                    "name": artist.name
                 }
                 for artist in self._artists
             ]
         }
 
     @staticmethod
-    async def make_request(uri: URI, connection: Connection) -> dict:
+    def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
 
@@ -40,7 +40,7 @@ class Track(Playable):
             "tracks/{id}".format(id=uri.id),
             fields="uri,name,album(uri,name),artists(uri,name)",
         )
-        return await connection.make_request("GET", endpoint)
+        return connection.make_request("GET", endpoint)
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
@@ -54,20 +54,20 @@ class Track(Playable):
             self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
-    async def album(self) -> Album:
+    def album(self) -> Album:
         if self._album is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._album
 
     @property
-    async def artists(self) -> list[Artist]:
+    def artists(self) -> list[Artist]:
         if self._artists is None:
-            await self._cache.load(uri=self._uri)
+            self._cache.load(uri=self._uri)
         return self._artists.copy()
 
     @property
-    async def images(self) -> list[dict[str, (int, str, None)]]:
-        return await (await self.album).images
+    def images(self) -> list[dict[str, (int, str, None)]]:
+        return (self.album).images
 
 
 from .album import Album

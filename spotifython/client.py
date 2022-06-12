@@ -35,13 +35,13 @@ class Client:
         """
         return self._connection.dump_token_data()
 
-    async def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None):
+    def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None):
         """
         resume playback or play specified resource\n
         only one of elements and context may be specified\n\n
         examples:\n
-        await Client.play()\n
-        await Client.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
+        Client.play()\n
+        Client.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
 
         :param elements: list of spotify uris or Playable types to play (None to resume playing)
         :param context: uri or PlayContext to use as context (e.g. playlist or album)
@@ -67,7 +67,7 @@ class Client:
             data["position_ms"] = position_ms
 
         if context is not None:
-            data["context_uri"] = str(context if isinstance(context, URI) else await context.uri)
+            data["context_uri"] = str(context if isinstance(context, URI) else context.uri)
             send_payload = True
 
         if elements is not None:
@@ -76,17 +76,17 @@ class Client:
             data["uris"] = []
             for element in elements:
                 assert isinstance(element, (URI | Playable))
-                data["uris"].append(str(element if isinstance(element, URI) else await element.uri))
+                data["uris"].append(str(element if isinstance(element, URI) else element.uri))
             send_payload = True
 
         if send_payload:
             # play specified resource
-            await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps(data))
+            self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps(data))
         else:
             # resume whatever was playing
-            await self._connection.make_request(method="PUT", endpoint=endpoint)
+            self._connection.make_request(method="PUT", endpoint=endpoint)
 
-    async def pause(self, device_id: str = None):
+    def pause(self, device_id: str = None):
         """
         pause playback
 
@@ -97,9 +97,9 @@ class Client:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/pause", device_id=device_id)
 
-        await self._connection.make_request(method="PUT", endpoint=endpoint)
+        self._connection.make_request(method="PUT", endpoint=endpoint)
 
-    async def next(self, device_id: str = None):
+    def next(self, device_id: str = None):
         """
         skip to next track in queue
 
@@ -110,9 +110,9 @@ class Client:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/next", device_id=device_id)
 
-        await self._connection.make_request(method="POST", endpoint=endpoint)
+        self._connection.make_request(method="POST", endpoint=endpoint)
 
-    async def prev(self, device_id: str = None):
+    def prev(self, device_id: str = None):
         """
         skip to previous track in queue
 
@@ -123,9 +123,9 @@ class Client:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/previous", device_id=device_id)
 
-        await self._connection.make_request(method="POST", endpoint=endpoint)
+        self._connection.make_request(method="POST", endpoint=endpoint)
 
-    async def set_playback_shuffle(self, state: bool = True, device_id: str = None):
+    def set_playback_shuffle(self, state: bool = True, device_id: str = None):
         """
         set shuffle mode on the specified device
 
@@ -138,13 +138,13 @@ class Client:
 
         endpoint = self._connection.add_parameters_to_endpoint("me/player/shuffle", device_id=device_id, state=state)
 
-        await self._connection.make_request(method="PUT", endpoint=endpoint)
+        self._connection.make_request(method="PUT", endpoint=endpoint)
 
-    async def add_to_queue(self, element: (URI | Playable), device_id: str = None):
+    def add_to_queue(self, element: (URI | Playable), device_id: str = None):
         """
         add uri to queue \n\n
         example: \n
-        await SpotifyClient.add_to_queue("spotify:track:4iV5W9uYEdYUVa79Axb7Rh")
+        SpotifyClient.add_to_queue("spotify:track:4iV5W9uYEdYUVa79Axb7Rh")
 
         :param element: resource to add to queue
         :param device_id: device to target (None to use currently active device
@@ -153,24 +153,24 @@ class Client:
         assert isinstance(element, (URI | Playable))
         assert isinstance(device_id, (str | None))
 
-        endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else await element.uri))
-        await self._connection.make_request(method="POST", endpoint=endpoint)
+        endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else element.uri))
+        self._connection.make_request(method="POST", endpoint=endpoint)
 
-    async def close(self):
+    def close(self):
         """
         clean session and exit
         """
-        await self._connection.close()
+        self._connection.close()
 
-    async def get_devices(self) -> list[dict[str, (str | bool | int)]]:
+    def get_devices(self) -> list[dict[str, (str | bool | int)]]:
         """
         return a list of all devices registered in spotify connect
         """
         endpoint = "me/player/devices"
-        data = await self._connection.make_request(method="GET", endpoint=endpoint)
+        data = self._connection.make_request(method="GET", endpoint=endpoint)
         return data["devices"]
 
-    async def transfer_playback(self, device_id: str, play: bool = False):
+    def transfer_playback(self, device_id: str, play: bool = False):
         """
         transfer playback to new device
         :param device_id: id of targeted device
@@ -180,16 +180,16 @@ class Client:
         assert isinstance(play, bool)
 
         endpoint = "me/player"
-        await self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
+        self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
-    async def user_playlists(self) -> list[Playlist]:
+    def user_playlists(self) -> list[Playlist]:
         """
         get playlists of current user
         :return: list of playlists saved in the user profile
         """
-        return await (await self._cache.get_me()).playlists
+        return (self._cache.get_me()).playlists
 
-    async def get_playlist(self, uri: URI) -> Playlist:
+    def get_playlist(self, uri: URI) -> Playlist:
         """
         return Playlist object for the given id
         :param uri: uri of the playlist
@@ -198,7 +198,7 @@ class Client:
 
         return self._cache.get_playlist(uri=uri)
 
-    async def get_track(self, uri: URI) -> Track:
+    def get_track(self, uri: URI) -> Track:
         """
         return Track object for the given id
         :param uri: uri of the track
@@ -207,7 +207,7 @@ class Client:
 
         return self._cache.get_track(uri=uri)
 
-    async def get_user(self, uri: URI) -> User:
+    def get_user(self, uri: URI) -> User:
         """
         return User object for the given id
         :param uri: uri of the user
@@ -216,16 +216,16 @@ class Client:
 
         return self._cache.get_user(uri=uri)
 
-    async def get_playing(self) -> dict:
+    def get_playing(self) -> dict:
         """
         returns information to playback state
         :return: dict with is_playing, device, repeat_state, shuffle_state, context(playlist), item(track), actions
         """
         endpoint = "me/player"
 
-        return await self._connection.make_request(method="GET", endpoint=endpoint)
+        return self._connection.make_request(method="GET", endpoint=endpoint)
 
-    async def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
+    def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
         """
         search for item
 
@@ -247,7 +247,7 @@ class Client:
             q=query,
             type=element_type
         )
-        data = await self._connection.make_request(method="GET", endpoint=endpoint)
+        data = self._connection.make_request(method="GET", endpoint=endpoint)
         types = element_type.split(",")
         ret = {}
         for element_type in types:
@@ -258,7 +258,7 @@ class Client:
                 ret[element_type][-1].load_dict(data=element)
         return ret
 
-    async def search_track(self, query: str, limit: int = 5, offset: int = 0) -> list[Track]:
+    def search_track(self, query: str, limit: int = 5, offset: int = 0) -> list[Track]:
         """
         search for track
 
@@ -267,13 +267,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found tracks
         """
-        elements = (await self.search(query=query, element_type="track", offset=offset, limit=limit))["tracks"]
+        elements = (self.search(query=query, element_type="track", offset=offset, limit=limit))["tracks"]
         for element in elements:
             assert isinstance(element, Track), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_episode(self, query: str, limit: int = 5, offset: int = 0) -> list[Episode]:
+    def search_episode(self, query: str, limit: int = 5, offset: int = 0) -> list[Episode]:
         """
         search for episode
 
@@ -282,13 +282,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found episodes
         """
-        elements = (await self.search(query=query, element_type="episode", offset=offset, limit=limit))["episodes"]
+        elements = (self.search(query=query, element_type="episode", offset=offset, limit=limit))["episodes"]
         for element in elements:
             assert isinstance(element, Episode), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_playlist(self, query: str, limit: int = 5, offset: int = 0) -> list[Playlist]:
+    def search_playlist(self, query: str, limit: int = 5, offset: int = 0) -> list[Playlist]:
         """
         search for playlist
 
@@ -297,13 +297,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found playlists
         """
-        elements = (await self.search(query=query, element_type="playlist", offset=offset, limit=limit))["playlists"]
+        elements = (self.search(query=query, element_type="playlist", offset=offset, limit=limit))["playlists"]
         for element in elements:
             assert isinstance(element, Playlist), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_album(self, query: str, limit: int = 5, offset: int = 0) -> list[Album]:
+    def search_album(self, query: str, limit: int = 5, offset: int = 0) -> list[Album]:
         """
         search for album
 
@@ -312,13 +312,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found albums
         """
-        elements = (await self.search(query=query, element_type="album", offset=offset, limit=limit))["albums"]
+        elements = (self.search(query=query, element_type="album", offset=offset, limit=limit))["albums"]
         for element in elements:
             assert isinstance(element, Album), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_artist(self, query: str, limit: int = 5, offset: int = 0) -> list[Artist]:
+    def search_artist(self, query: str, limit: int = 5, offset: int = 0) -> list[Artist]:
         """
         search for artist
 
@@ -327,13 +327,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found artists
         """
-        elements = (await self.search(query=query, element_type="artist", offset=offset, limit=limit))["artists"]
+        elements = (self.search(query=query, element_type="artist", offset=offset, limit=limit))["artists"]
         for element in elements:
             assert isinstance(element, Artist), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_user(self, query: str, limit: int = 5, offset: int = 0) -> list[User]:
+    def search_user(self, query: str, limit: int = 5, offset: int = 0) -> list[User]:
         """
         search for user
 
@@ -342,13 +342,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found users
         """
-        elements = (await self.search(query=query, element_type="user", offset=offset, limit=limit))["users"]
+        elements = (self.search(query=query, element_type="user", offset=offset, limit=limit))["users"]
         for element in elements:
             assert isinstance(element, User), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_show(self, query: str, limit: int = 5, offset: int = 0) -> list[Show]:
+    def search_show(self, query: str, limit: int = 5, offset: int = 0) -> list[Show]:
         """
         search for show
 
@@ -357,13 +357,13 @@ class Client:
         :param offset: offset of results
         :return: list of the found users
         """
-        elements = (await self.search(query=query, element_type="show", offset=offset, limit=limit))["shows"]
+        elements = (self.search(query=query, element_type="show", offset=offset, limit=limit))["shows"]
         for element in elements:
             assert isinstance(element, User), "got invalid search result"
         # noinspection PyTypeChecker
         return elements
 
-    async def search_playable(self, query: str, limit: int = 5, offset: int = 0) -> list[Playable]:
+    def search_playable(self, query: str, limit: int = 5, offset: int = 0) -> list[Playable]:
         """
         search for playable
 
@@ -372,7 +372,7 @@ class Client:
         :param offset: offset of results
         :return: list of the found playables
         """
-        data = await self.search(query=query, element_type="track,episode", offset=offset, limit=limit)
+        data = self.search(query=query, element_type="track,episode", offset=offset, limit=limit)
         elements = data["tracks"] + data["episodes"]
         for element in elements:
             assert isinstance(element, Playable), "got invalid search result"

@@ -11,7 +11,7 @@ setuptools.setup(
     version="0.1.1",
     author="VAWVAW",
     author_email="vawvaw@vaw-valentin.de",
-    description="An async caching python interface to readonly parts of the spotify api.",
+    description="An caching python interface to readonly parts of the spotify api.",
     long_description=readme,
     long_description_content_type="text/x-rst",
     url="https://github.com/vawvaw/spotifython",
