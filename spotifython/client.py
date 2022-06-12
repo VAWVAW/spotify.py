@@ -156,7 +156,8 @@ class Client:
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else element.uri))
         self._connection.make_request(method="POST", endpoint=endpoint)
 
-    def get_devices(self) -> list[dict[str, (str | bool | int)]]:
+    @property
+    def devices(self) -> list[dict[str, (str | bool | int)]]:
         """
         return a list of all devices registered in spotify connect
         """
@@ -176,6 +177,7 @@ class Client:
         endpoint = "me/player"
         self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
+    @property
     def user_playlists(self) -> list[Playlist]:
         """
         get playlists of current user
