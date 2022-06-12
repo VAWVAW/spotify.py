@@ -17,6 +17,8 @@ Authentication
 ++++++++++++++
 
 .. autoclass:: Authentication
+    :members: to_dict
+    :exclude-members:
 
 Scope
 +++++
@@ -71,4 +73,4 @@ Errors
 ------
 
 .. automodule:: spotifython.errors
-    :exclude-members: with_traceback
+    :exclude-members: with_traceback,args,ElementOutdated,Retry

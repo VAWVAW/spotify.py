@@ -7,6 +7,9 @@ from .artist import Artist
 
 
 class Album(PlayContext):
+    """
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_album` instead.
+    """
     def __init__(self, uri: URI, cache: Cache, name: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
 
@@ -102,6 +105,11 @@ class Album(PlayContext):
 
     @property
     def images(self) -> list[dict[str, (str, int, None)]]:
+        """
+        get list of the image registered with spotify in different sizes
+
+        :return: [{'height': (int | None), 'width': (int | None), 'url': str}]
+        """
         if self._images is None:
             self._cache.load(uri=self._uri)
         return self._images.copy()

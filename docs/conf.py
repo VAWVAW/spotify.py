@@ -30,7 +30,7 @@ author = 'VAWVAW'
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
 # ones.
 extensions = [
-    "sphinx.ext.autodoc"
+    "sphinx.ext.autodoc",
 ]
 
 # Add any paths that contain templates here, relative to this directory.
@@ -54,7 +54,10 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 
 autodoc_default_options = {
     'members': True,
+    'undoc-members': True,
+    'exclude-members': "make_request,to_dict,load_dict",
     'inherited-members': True,
+    'autoclass_content': 'both',
 }
 
 pygments_style = 'friendly'

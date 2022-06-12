@@ -26,7 +26,7 @@ import logging
 from .client import Client
 from .authentication import Authentication
 from .user import User
-from .errors import *
+from .errors import SpotifyException, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, NotModified, InternalServerError, InvalidTokenData
 from .scope import Scope
 from .playlist import Playlist
 from .track import Track

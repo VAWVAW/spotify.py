@@ -4,6 +4,9 @@ from .abc import Cacheable
 
 
 class User(Cacheable):
+    """
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    """
     def __init__(self, uri: URI, cache: Cache, display_name: str = None):
         super().__init__(uri=uri, cache=cache, name=display_name)
         self._playlists = None

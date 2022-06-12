@@ -3,6 +3,9 @@ from __future__ import annotations
 
 
 class URI:
+    """
+    A simple wrapper for the uri sting.
+    """
     def __init__(self, uri_string: str):
         assert isinstance(uri_string, str)
         uri_elements = uri_string.split(":")
@@ -22,12 +25,21 @@ class URI:
         return new_uri
 
     def __str__(self):
+        """
+        :return: uri as string
+        """
         return "spotify:" + self._type + ":" + self._id
 
     @property
     def id(self) -> str:
+        """
+        :return: id of the element
+        """
         return self._id
 
     @property
     def type(self) -> str:
+        """
+        :return: type of the element
+        """
         return self._type

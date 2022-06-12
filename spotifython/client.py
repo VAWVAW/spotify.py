@@ -15,9 +15,17 @@ from .show import Show
 from .authentication import Authentication
 
 
+def _process_uri(uri: (str | URI)) -> URI:
+    assert isinstance(uri, (str | URI))
+    if isinstance(uri, URI):
+        return uri
+    return URI(uri_string=uri)
+
+
 class Client:
     """
     standard interface to the api
+
     :param authentication: Authentication object for client authentication
     :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
     """
@@ -31,17 +39,15 @@ class Client:
     def get_authentication_data(self) -> dict[str, (str | int | None)]:
         """
         Dump the authentication data for safe caching
+
         :return: { "client_id": client_id, "client_secret": client_secret, "scope": str(scope), "refresh_token": refresh_token, "show_dialog": show_dialog, "token": token, "expires": int(expires) }
         """
         return self._connection.dump_token_data()
 
-    def play(self, elements: list[(URI | Playable)] = None, context: (URI | PlayContext) = None, offset: int = None, position_ms: int = None, device_id: str = None):
+    def play(self, elements: list[(URI | Playable | str)] = None, context: (URI | PlayContext | str) = None, offset: int = None, position_ms: int = None, device_id: str = None):
         """
-        resume playback or play specified resource\n
-        only one of elements and context may be specified\n\n
-        examples:\n
-        Client.play()\n
-        Client.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
+        resume playback or play specified resource
+        only one of elements and context may be specified
 
         :param elements: list of spotify uris or Playable types to play (None to resume playing)
         :param context: uri or PlayContext to use as context (e.g. playlist or album)
@@ -51,7 +57,7 @@ class Client:
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(elements, (list | None))
-        assert isinstance(context, (URI | PlayContext | None))
+        assert isinstance(context, (URI | PlayContext | str | None))
         assert isinstance(offset, (int | None))
         assert isinstance(position_ms, (int | None))
         assert isinstance(device_id, (str | None))
@@ -67,7 +73,7 @@ class Client:
             data["position_ms"] = position_ms
 
         if context is not None:
-            data["context_uri"] = str(context if isinstance(context, URI) else context.uri)
+            data["context_uri"] = str(context.uri if isinstance(context, PlayContext) else context)
             send_payload = True
 
         if elements is not None:
@@ -75,8 +81,8 @@ class Client:
                 raise BadRequestException("only one of elements and context may be specified")
             data["uris"] = []
             for element in elements:
-                assert isinstance(element, (URI | Playable))
-                data["uris"].append(str(element if isinstance(element, URI) else element.uri))
+                assert isinstance(element, (URI | Playable | str))
+                data["uris"].append(str(element.uri if isinstance(element, Playable) else element))
             send_payload = True
 
         if send_payload:
@@ -130,7 +136,7 @@ class Client:
         set shuffle mode on the specified device
 
         :param state: whether to activate shuffle
-        :param device_id: device to target (None to use currently active device
+        :param device_id: device to target (None to use active device
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(state, bool)
@@ -142,9 +148,7 @@ class Client:
 
     def add_to_queue(self, element: (URI | Playable), device_id: str = None):
         """
-        add uri to queue \n\n
-        example: \n
-        SpotifyClient.add_to_queue("spotify:track:4iV5W9uYEdYUVa79Axb7Rh")
+        add uri to queue
 
         :param element: resource to add to queue
         :param device_id: device to target (None to use currently active device
@@ -168,6 +172,7 @@ class Client:
     def transfer_playback(self, device_id: str, play: bool = False):
         """
         transfer playback to new device
+
         :param device_id: id of targeted device
         :param play: whether to start playing on new device
         """
@@ -181,40 +186,85 @@ class Client:
     def user_playlists(self) -> list[Playlist]:
         """
         get playlists of current user
+
         :return: list of playlists saved in the user profile
         """
         return (self._cache.get_me()).playlists
 
-    def get_playlist(self, uri: URI) -> Playlist:
+    def get_playlist(self, uri: (URI | str)) -> Playlist:
         """
         return Playlist object for the given id
+
         :param uri: uri of the playlist
         """
-        assert isinstance(uri, URI)
+        uri = _process_uri(uri=uri)
 
         return self._cache.get_playlist(uri=uri)
 
-    def get_track(self, uri: URI) -> Track:
+    def get_album(self, uri: (URI | str)) -> Album:
+        """
+        return Album object for the given id
+
+        :param uri: uri of the album
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_album(uri=uri)
+
+    def get_show(self, uri: (URI | str)) -> Show:
+        """
+        return Show object for the given id
+
+        :param uri: uri of the Show
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_show(uri=uri)
+
+    def get_episode(self, uri: (URI | str)) -> Episode:
+        """
+        return Episode object for the given id
+
+        :param uri: uri of the episode
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_episode(uri=uri)
+
+    def get_track(self, uri: (str | URI)) -> Track:
         """
         return Track object for the given id
+
         :param uri: uri of the track
         """
-        assert isinstance(uri, URI)
+        uri = _process_uri(uri=uri)
 
         return self._cache.get_track(uri=uri)
 
-    def get_user(self, uri: URI) -> User:
+    def get_artist(self, uri: (URI | str)) -> Artist:
+        """
+        return Artist object for the given id
+
+        :param uri: uri of the artist
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_artist(uri=uri)
+
+    def get_user(self, uri: (str | URI)) -> User:
         """
         return User object for the given id
+
         :param uri: uri of the user
         """
-        assert isinstance(uri, URI)
+        uri = _process_uri(uri=uri)
 
         return self._cache.get_user(uri=uri)
 
     def get_playing(self) -> dict:
         """
         returns information to playback state
+
         :return: dict with is_playing, device, repeat_state, shuffle_state, context(playlist), item(track), actions
         """
         endpoint = "me/player"

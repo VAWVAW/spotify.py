@@ -39,11 +39,24 @@ class Playable(Cacheable, ABC):
     @property
     @abstractmethod
     def images(self) -> list[dict[str, (int, str, None)]]:
+        """
+        get list of the image registered with spotify in different sizes
+
+        :return: [{'height': (int | None), 'width': (int | None), 'url': str}]
+        """
         pass
 
 
 class PlayContext(Cacheable, ABC):
-    pass
+    @property
+    @abstractmethod
+    def images(self) -> list[dict[str, (int, str, None)]]:
+        """
+        get list of the image registered with spotify in different sizes
+
+        :return: [{'height': (int | None), 'width': (int | None), 'url': str}]
+        """
+        pass
 
 
 from .uri import URI

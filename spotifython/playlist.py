@@ -7,6 +7,9 @@ from .errors import ElementOutdated
 
 
 class Playlist(PlayContext):
+    """
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_playlist` instead.
+    """
     def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None):
         super().__init__(uri=uri, cache=cache, name=name)
 
@@ -134,11 +137,22 @@ class Playlist(PlayContext):
 
     @property
     def images(self) -> list[dict[str, (str, int, None)]]:
+        """
+        get list of the image registered with spotify in different sizes
+
+        :return: [{'height': (int | None), 'width': (int | None), 'url': str}]
+        """
         if self._images is None:
             self._cache.load(uri=self._uri)
         return self._images.copy()
 
     def search(self, *strings: str) -> list[Playable]:
+        """
+        Search for the strings in the song titles. Only returns exact matches for all strings.
+
+        :param strings: strings to search for
+        :return: list of Tracks and Episodes
+        """
         if self._items is None:
             self._cache.load(uri=self._uri)
         results = []
