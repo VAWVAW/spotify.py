@@ -67,7 +67,7 @@ class Track(Playable):
 
     @property
     def images(self) -> list[dict[str, (int, str, None)]]:
-        return (self.album).images
+        return self.album.images
 
 
 from .album import Album

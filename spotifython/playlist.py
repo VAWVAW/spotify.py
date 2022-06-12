@@ -144,7 +144,7 @@ class Playlist(PlayContext):
         results = []
         strings = [string.lower() for string in strings]
         for item in self._items:
-            song_title = (item["track"].name).lower()
+            song_title = item["track"].name.lower()
 
             do_append = True
             for string in strings:
