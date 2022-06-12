@@ -21,6 +21,9 @@ class Connection:
 
     def _evaluate_response(self, response: requests.Response) -> dict | None:
         match response.status_code:
+            case 202:
+                # Accepted (seems to imply success and 204)
+                return None
             case 204:
                 # no content
                 return None
