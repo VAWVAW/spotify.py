@@ -20,6 +20,7 @@ Installing
 
     # Windows
     py -3 -m pip install -U spotifython
+
 To install the development version, run:
 
 .. code:: sh
