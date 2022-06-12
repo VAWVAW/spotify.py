@@ -15,7 +15,7 @@ __title__ = 'spotifython'
 __author__ = 'VAWVAW'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present VAWVAW'
-__version__ = '0.1.2'
+__version__ = '0.1.3'
 
 # noinspection PyUnboundLocalVariable
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)
@@ -38,6 +38,6 @@ from .show import Show
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=0, minor=1, micro=2, releaselevel='development', serial=0)
+version_info = VersionInfo(major=0, minor=1, micro=3, releaselevel='development', serial=0)
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
