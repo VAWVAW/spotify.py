@@ -16,14 +16,12 @@ from .authentication import Authentication
 
 
 class Client:
+    """
+    standard interface to the api
+    :param authentication: Authentication object for client authentication
+    :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
+    """
     def __init__(self, authentication: Authentication, cache_dir: str = None):
-        """
-        You need to request a token using Client.request_token() to interact with the api.
-
-        You need to register an application at https://developer.spotify.com/dashboard/applications and edit the settings to add "http://localhost:2342/" to the redirect uris to allow this library to request a token.
-        :param authentication: Authentication object for client authentication
-        :param cache_dir: global path to the directory that this library should cache data in (note that sensitive data you request may be cached, set to None to disable caching)
-        """
         assert isinstance(cache_dir, (str | None))
         assert isinstance(authentication, Authentication)
 
@@ -45,11 +43,11 @@ class Client:
         await Client.play()\n
         await Client.play(context="spotify:album:5ht7ItJgpBH7W6vJ5BqpPr", offset=5, position_ms=1000)
 
-        :param elements: list of spotify uris or Playable types to play (leave at None to resume playing)
+        :param elements: list of spotify uris or Playable types to play (None to resume playing)
         :param context: uri or PlayContext to use as context (e.g. playlist or album)
         :param offset: number of song in resource to start playing (only used if context_uri is set)
         :param position_ms: position in song to seek (only used if context_uri is set)
-        :param device_id: device to target (leave at None to use currently active device
+        :param device_id: device to target (None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(elements, (list | None))
@@ -92,7 +90,7 @@ class Client:
         """
         pause playback
 
-        :param device_id: device to target (leave at None to use currently active device
+        :param device_id: device to target (None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(device_id, (str | None))
@@ -132,7 +130,7 @@ class Client:
         set shuffle mode on the specified device
 
         :param state: whether to activate shuffle
-        :param device_id: device to target (leave at None to use currently active device
+        :param device_id: device to target (None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(state, bool)
@@ -149,7 +147,7 @@ class Client:
         await SpotifyClient.add_to_queue("spotify:track:4iV5W9uYEdYUVa79Axb7Rh")
 
         :param element: resource to add to queue
-        :param device_id: device to target (leave at None to use currently active device
+        :param device_id: device to target (None to use currently active device
         :raises SpotifyException: errors according to http response status
         """
         assert isinstance(element, (URI | Playable))
