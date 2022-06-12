@@ -17,6 +17,7 @@ setuptools.setup(
     url="https://github.com/vawvaw/spotifython",
     project_urls={
         "Bug Tracker": "https://github.com/vawvaw/spotifython/issues",
+        "Documentation": "https://spotifython.readthedocs.io/",
     },
     license="GPLv3",
     classifiers=[
