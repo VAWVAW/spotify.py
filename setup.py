@@ -34,8 +34,7 @@ setuptools.setup(
         'Topic :: Utilities',
         "Typing :: Typed",
     ],
-    package_dir={"": "spotifython"},
-    packages=setuptools.find_packages(where="spotifython"),
+    packages=["spotifython"],
     install_requires=requirements,
     python_requires=">=3.10",
 )
