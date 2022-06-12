@@ -156,12 +156,6 @@ class Client:
         endpoint = self._connection.add_parameters_to_endpoint("me/player/queue", device_id=device_id, uri=str(element if isinstance(element, URI) else element.uri))
         self._connection.make_request(method="POST", endpoint=endpoint)
 
-    def close(self):
-        """
-        clean session and exit
-        """
-        self._connection.close()
-
     def get_devices(self) -> list[dict[str, (str | bool | int)]]:
         """
         return a list of all devices registered in spotify connect
