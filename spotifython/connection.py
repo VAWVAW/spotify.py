@@ -64,11 +64,18 @@ class Connection:
             self._get_token()
         if data is not None:
             log.debug("%s %s with %s", method, url, data)
-        response = requests.request(method, url, data=data, headers=self._get_header())
-        try:
-            data = self._evaluate_response(response)
-        except Retry:
-            data = self._evaluate_response(requests.request(method, url, data=data, headers=self._get_header()))
+        retries = 5
+        while retries > 0:
+            response = requests.request(method, url, data=data, headers=self._get_header())
+            try:
+                data = self._evaluate_response(response)
+            except Retry:
+                retries -= 1
+                log.info("retrying (%d)", retries)
+            else:
+                break
+        else:
+            log.error("request ran out of retries")
         return data
 
     @staticmethod
