@@ -119,6 +119,7 @@ class Cache:
     # get cached objects and create them if needed
     def get_track(self, uri: URI, name: str = None) -> Track:
         assert isinstance(uri, URI)
+        assert uri.type == Track
 
         if uri not in self._by_type[Track].keys():
             to_add = Track(uri=uri, cache=self, name=name)
@@ -128,6 +129,7 @@ class Cache:
 
     def get_playlist(self, uri: URI, name: str = None, snapshot_id: str = None) -> Playlist:
         assert isinstance(uri, URI)
+        assert uri.type == Playlist
 
         if uri not in self._by_type[Playlist].keys():
             to_add = Playlist(uri=uri, cache=self, name=name, snapshot_id=snapshot_id)
@@ -137,6 +139,7 @@ class Cache:
 
     def get_album(self, uri: URI, name: str = None) -> Album:
         assert isinstance(uri, URI)
+        assert uri.type == Album
 
         if uri not in self._by_type[Album].keys():
             to_add = Album(uri=uri, cache=self, name=name)
@@ -146,6 +149,7 @@ class Cache:
 
     def get_artist(self, uri: URI, name: str = None) -> Artist:
         assert isinstance(uri, URI)
+        assert uri.type == Artist
 
         if uri not in self._by_type[Artist].keys():
             to_add = Artist(uri=uri, cache=self, name=name)
@@ -155,6 +159,7 @@ class Cache:
 
     def get_user(self, uri: URI, display_name: str = None) -> User:
         assert isinstance(uri, URI)
+        assert uri.type == User
 
         if uri not in self._by_type[User].keys():
             to_add = User(uri=uri, cache=self, display_name=display_name)
@@ -164,6 +169,7 @@ class Cache:
 
     def get_episode(self, uri: URI, name: str = None) -> Episode:
         assert isinstance(uri, URI)
+        assert uri.type == Episode
 
         if uri not in self._by_type[Episode].keys():
             to_add = Show(uri=uri, cache=self, name=name)
@@ -173,6 +179,7 @@ class Cache:
 
     def get_show(self, uri: URI, name: str = None) -> Show:
         assert isinstance(uri, URI)
+        assert uri.type == Show
 
         if uri not in self._by_type[Show].keys():
             to_add = Show(uri=uri, cache=self, name=name)
