@@ -3,10 +3,13 @@ from __future__ import annotations
 
 import json
 import os.path
+import logging
 
 from .connection import Connection
 from .uri import URI
 from .errors import ElementOutdated
+
+log = logging.getLogger(__name__)
 
 
 class Cache:
@@ -76,11 +79,15 @@ class Cache:
             data["fetched"] = True
             element.load_dict(data)
 
+        if not data["fetched"]:
+            log.debug("loaded %s from cache", str(uri))
+
         # cache if needed
         if data["fetched"] and self._cache_dir is not None:
             path = os.path.join(self._cache_dir, str(uri))
             with open(path, "w") as out_file:
                 json.dump(element.to_dict(), out_file)
+                log.debug("requested and cached %s", str(uri))
 
     def get_me(self) -> Me:
         if self._me is None:
