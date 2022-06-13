@@ -1,4 +1,5 @@
 import json
+from typing import Type
 
 from .connection import Connection
 from .cache import Cache
@@ -208,9 +209,18 @@ class Client:
         """
         return (self._cache.get_me()).playlists
 
+    def get_element(self, uri: (URI | str)) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+        """
+        return the element with the matching uri
+        :param uri: uri of the element
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_element(uri=uri)
+
     def get_playlist(self, uri: (URI | str)) -> Playlist:
         """
-        return Playlist object for the given id
+        return Playlist object with the given uri
 
         :param uri: uri of the playlist
         """
@@ -220,7 +230,7 @@ class Client:
 
     def get_album(self, uri: (URI | str)) -> Album:
         """
-        return Album object for the given id
+        return Album object with the given uri
 
         :param uri: uri of the album
         """
@@ -230,7 +240,7 @@ class Client:
 
     def get_show(self, uri: (URI | str)) -> Show:
         """
-        return Show object for the given id
+        return Show object with the given uri
 
         :param uri: uri of the Show
         """
@@ -240,7 +250,7 @@ class Client:
 
     def get_episode(self, uri: (URI | str)) -> Episode:
         """
-        return Episode object for the given id
+        return Episode object with the given uri
 
         :param uri: uri of the episode
         """
@@ -250,7 +260,7 @@ class Client:
 
     def get_track(self, uri: (str | URI)) -> Track:
         """
-        return Track object for the given id
+        return Track object with the given uri
 
         :param uri: uri of the track
         """
@@ -260,7 +270,7 @@ class Client:
 
     def get_artist(self, uri: (URI | str)) -> Artist:
         """
-        return Artist object for the given id
+        return Artist object with the given uri
 
         :param uri: uri of the artist
         """
@@ -270,7 +280,7 @@ class Client:
 
     def get_user(self, uri: (str | URI)) -> User:
         """
-        return User object for the given id
+        return User object with the given uri
 
         :param uri: uri of the user
         """

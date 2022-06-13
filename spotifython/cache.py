@@ -4,6 +4,7 @@ from __future__ import annotations
 import json
 import os.path
 import logging
+from typing import Type
 
 from .connection import Connection
 from .errors import ElementOutdated
@@ -31,7 +32,7 @@ class Cache:
     def cache_dir(self) -> str:
         return self._cache_dir
 
-    def get_element(self, uri: URI, name: str = None) -> Cacheable:
+    def get_element(self, uri: URI, name: str = None) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         if str(uri) not in self._by_uri.keys():
             # generate element based on type in uri
             to_add = uri.type(uri=uri, cache=self, name=name)
@@ -40,6 +41,7 @@ class Cache:
 
         return self._by_uri[str(uri)]
 
+    # noinspection PyArgumentList
     def load(self, uri: URI):
         assert isinstance(uri, URI)
 
@@ -61,12 +63,12 @@ class Cache:
             data["fetched"] = True
 
         try:
-            element.load_dict(data)
+            element.load_dict(data=data)
         except (KeyError, ElementOutdated):
             # maybe cache is outdated
             data = element.make_request(uri=uri, connection=self._connection)
             data["fetched"] = True
-            element.load_dict(data)
+            element.load_dict(data=data)
 
         if not data["fetched"]:
             log.debug("loaded %s from cache", str(uri))
@@ -196,4 +198,3 @@ from .track import Track
 from .artist import Artist
 from .album import Album
 from .show import Show
-from .abc import Cacheable
