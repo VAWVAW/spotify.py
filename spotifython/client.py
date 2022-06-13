@@ -182,6 +182,23 @@ class Client:
         endpoint = "me/player"
         self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
+    def get_playing(self) -> (dict | None):
+        """
+        returns information to playback state
+
+        :return: dict with is_playing, device, repeat_state, shuffle_state, context(playlist), item(track), actions
+        """
+        endpoint = "me/player"
+
+        data = self._connection.make_request(method="GET", endpoint=endpoint)
+        if data is None:
+            return None
+
+        data["item"] = self._cache.get_element(uri=URI(data["item"]["uri"]))
+        if data["context"] is not None:
+            data["context"] = self._cache.get_element(uri=URI(data["context"]["uri"]))
+        return data
+
     @property
     def user_playlists(self) -> list[Playlist]:
         """
@@ -260,16 +277,6 @@ class Client:
         uri = _process_uri(uri=uri)
 
         return self._cache.get_user(uri=uri)
-
-    def get_playing(self) -> dict:
-        """
-        returns information to playback state
-
-        :return: dict with is_playing, device, repeat_state, shuffle_state, context(playlist), item(track), actions
-        """
-        endpoint = "me/player"
-
-        return self._connection.make_request(method="GET", endpoint=endpoint)
 
     def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
         """
