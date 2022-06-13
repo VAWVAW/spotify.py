@@ -11,7 +11,7 @@ class User(Cacheable):
         super().__init__(uri=uri, cache=cache, name=display_name)
         self._playlists = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._playlists is None:
             self._cache.load(self.uri)
         return {

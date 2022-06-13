@@ -21,10 +21,10 @@ class Playlist(PlayContext):
         self._items = None
         self._images = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._items is None:
             self._cache.load(self.uri)
-        return {
+        ret = {
             "uri": str(self._uri),
             "description": self._description,
             "owner":
@@ -35,8 +35,10 @@ class Playlist(PlayContext):
             "images": self._images,
             "snapshot_id": self._snapshot_id,
             "name": self._name,
-            "public": self._public,
-            "tracks": {
+            "public": self._public
+        }
+        if not short:
+            ret["tracks"] = {
                 "items": [
                     {
                         "added_at": item["added_at"],
@@ -48,7 +50,7 @@ class Playlist(PlayContext):
                     for item in self._items
                 ]
             }
-        }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:

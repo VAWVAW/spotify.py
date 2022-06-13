@@ -16,15 +16,17 @@ class Show(PlayContext):
         self._images = None
         self._description = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._items is None:
             self._cache.load(self.uri)
-        return {
+        ret = {
             "uri": str(self._uri),
             "name": self._name,
             "description": self._description,
-            "image": self._images,
-            "episodes": {
+            "image": self._images
+        }
+        if not short:
+            ret["episodes"] = {
                 "items": [
                     {
                         "uri": str(item.uri),
@@ -33,7 +35,7 @@ class Show(PlayContext):
                     for item in self._items
                 ]
             }
-        }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:

@@ -17,7 +17,7 @@ class Track(Playable):
         self._album = None
         self._artists = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._artists is None:
             self._cache.load(self.uri)
         return {

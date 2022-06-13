@@ -26,7 +26,7 @@ class Cacheable(ABC):
         pass
 
     @abstractmethod
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         pass
 
     @staticmethod

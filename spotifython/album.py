@@ -17,10 +17,10 @@ class Album(PlayContext):
         self._items = None
         self._images = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._items is None:
             self._cache.load(self.uri)
-        return {
+        ret = {
             "uri": str(self._uri),
             "name": self._name,
             "images": self._images,
@@ -30,8 +30,10 @@ class Album(PlayContext):
                     "name": artist.name
                 }
                 for artist in self._artists
-            ],
-            "tracks": {
+            ]
+        }
+        if not short:
+            ret["tracks"] = {
                 "items": [
                     {
                         "uri": str(item.uri),
@@ -40,7 +42,7 @@ class Album(PlayContext):
                     for item in self._items
                 ]
             }
-        }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:

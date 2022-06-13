@@ -16,7 +16,7 @@ class Episode(Playable):
         self._images = None
         self._show = None
 
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False) -> dict:
         if self._show is None:
             self._cache.load(self.uri)
         return {
