@@ -17,6 +17,8 @@ class Show(PlayContext):
         self._description = None
 
     def to_dict(self) -> dict:
+        if self._items is None:
+            self._cache.load(self.uri)
         return {
             "uri": str(self._uri),
             "name": self._name,

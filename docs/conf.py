@@ -55,7 +55,7 @@ exclude_patterns = ['_build', 'Thumbs.db', '.DS_Store']
 autodoc_default_options = {
     'members': True,
     'undoc-members': True,
-    'exclude-members': "make_request,to_dict,load_dict",
+    'exclude-members': "make_request,load_dict",
     'inherited-members': True,
     'autoclass_content': 'both',
 }

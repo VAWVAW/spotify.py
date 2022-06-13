@@ -17,6 +17,8 @@ class Episode(Playable):
         self._show = None
 
     def to_dict(self) -> dict:
+        if self._show is None:
+            self._cache.load(self.uri)
         return {
             "uri": str(self._uri),
             "name": self._name,

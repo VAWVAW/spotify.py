@@ -12,6 +12,8 @@ class Artist(Cacheable):
         super().__init__(uri=uri, cache=cache, name=name)
 
     def to_dict(self) -> dict:
+        if self._name is None:
+            self._cache.load(self.uri)
         return {
             "name": self._name,
             "uri": str(self._uri)

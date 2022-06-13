@@ -12,6 +12,8 @@ class User(Cacheable):
         self._playlists = None
 
     def to_dict(self) -> dict:
+        if self._playlists is None:
+            self._cache.load(self.uri)
         return {
             "display_name": self._name,
             "uri": str(self._uri),

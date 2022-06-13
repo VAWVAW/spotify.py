@@ -18,6 +18,8 @@ class Track(Playable):
         self._artists = None
 
     def to_dict(self) -> dict:
+        if self._artists is None:
+            self._cache.load(self.uri)
         return {
             "uri": str(self._uri),
             "name": self._name,
