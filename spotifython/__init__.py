@@ -35,6 +35,7 @@ from .album import Album
 from .artist import Artist
 from .episode import Episode
 from .show import Show
+from .abc import Playable, PlayContext
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 

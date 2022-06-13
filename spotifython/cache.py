@@ -6,7 +6,6 @@ import os.path
 import logging
 
 from .connection import Connection
-from .uri import URI
 from .errors import ElementOutdated
 
 log = logging.getLogger(__name__)
@@ -19,23 +18,13 @@ class Cache:
         self._by_uri = {}
         self._me = None
         self._by_type = {
-            "playlist": {},
-            "episode": {},
-            "track": {},
-            "album": {},
-            "artist": {},
-            "show": {},
-            "user": {}
-        }
-
-        self._datatypes = {
-            "playlist": Playlist,
-            "episode": Episode,
-            "track": Track,
-            "album": Album,
-            "artist": Artist,
-            "show": Show,
-            "user": User
+            Playlist: {},
+            Episode: {},
+            Track: {},
+            Album: {},
+            Artist: {},
+            Show: {},
+            User: {}
         }
 
     @property
@@ -45,7 +34,7 @@ class Cache:
     def get_element(self, uri: URI, name: str = None) -> Cacheable:
         if str(uri) not in self._by_uri.keys():
             # generate element based on type in uri
-            to_add = self._datatypes[uri.type](uri=uri, cache=self, name=name)
+            to_add = uri.type(uri=uri, cache=self, name=name)
             self._by_uri[str(uri)] = to_add
             self._by_type[uri.type][str(uri)] = to_add
 
@@ -131,72 +120,73 @@ class Cache:
     def get_track(self, uri: URI, name: str = None) -> Track:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["track"].keys():
+        if uri not in self._by_type[Track].keys():
             to_add = Track(uri=uri, cache=self, name=name)
-            self._by_type["track"][str(uri)] = to_add
+            self._by_type[Track][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["track"][str(uri)]
+        return self._by_type[Track][str(uri)]
 
     def get_playlist(self, uri: URI, name: str = None, snapshot_id: str = None) -> Playlist:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["playlist"].keys():
+        if uri not in self._by_type[Playlist].keys():
             to_add = Playlist(uri=uri, cache=self, name=name, snapshot_id=snapshot_id)
-            self._by_type["playlist"][uri] = to_add
+            self._by_type[Playlist][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["playlist"][uri]
+        return self._by_type[Playlist][uri]
 
     def get_album(self, uri: URI, name: str = None) -> Album:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["playlist"].keys():
+        if uri not in self._by_type[Album].keys():
             to_add = Album(uri=uri, cache=self, name=name)
-            self._by_type["album"][uri] = to_add
+            self._by_type[Album][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["album"][uri]
+        return self._by_type[Album][uri]
 
     def get_artist(self, uri: URI, name: str = None) -> Artist:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["artist"].keys():
+        if uri not in self._by_type[Artist].keys():
             to_add = Artist(uri=uri, cache=self, name=name)
-            self._by_type["artist"][uri] = to_add
+            self._by_type[Artist][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["artist"][uri]
+        return self._by_type[Artist][uri]
 
     def get_user(self, uri: URI, display_name: str = None) -> User:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["user"].keys():
+        if uri not in self._by_type[User].keys():
             to_add = User(uri=uri, cache=self, display_name=display_name)
-            self._by_type["user"][uri] = to_add
+            self._by_type[User][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["user"][uri]
+        return self._by_type[User][uri]
 
     def get_episode(self, uri: URI, name: str = None) -> Episode:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["episode"].keys():
+        if uri not in self._by_type[Episode].keys():
             to_add = Show(uri=uri, cache=self, name=name)
-            self._by_type["episode"][uri] = to_add
+            self._by_type[Episode][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["episode"][uri]
+        return self._by_type[Episode][uri]
 
     def get_show(self, uri: URI, name: str = None) -> Show:
         assert isinstance(uri, URI)
 
-        if uri not in self._by_type["show"].keys():
+        if uri not in self._by_type[Show].keys():
             to_add = Show(uri=uri, cache=self, name=name)
-            self._by_type["show"][uri] = to_add
+            self._by_type[Show][uri] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type["show"][uri]
+        return self._by_type[Show][uri]
 
 
+from .uri import URI
 from .user import User, Me
 from .playlist import Playlist
 from .episode import Episode
 from .track import Track
-from .abc import Cacheable
 from .artist import Artist
 from .album import Album
 from .show import Show
+from .abc import Cacheable

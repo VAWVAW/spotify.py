@@ -37,7 +37,7 @@ class Show(PlayContext):
     def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
-        assert uri.type == "show"
+        assert uri.type == Show
 
         offset = 0
         limit = 50

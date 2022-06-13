@@ -52,7 +52,7 @@ class Playlist(PlayContext):
     def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
-        assert uri.type == "playlist"
+        assert uri.type == Playlist
 
         offset = 0
         limit = 100
