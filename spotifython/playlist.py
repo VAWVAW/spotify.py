@@ -10,9 +10,10 @@ class Playlist(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_playlist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None, **kwargs):
+    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None, check_outdated: bool = True, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
+        self._check_outdated = check_outdated
         self._snapshot_id = snapshot_id
 
         self._description = None
@@ -94,7 +95,7 @@ class Playlist(PlayContext):
         assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
 
-        if self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
+        if self._check_outdated and self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
             raise ElementOutdated()
 
         self._name = data["name"]

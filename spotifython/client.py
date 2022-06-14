@@ -195,9 +195,9 @@ class Client:
         if data is None:
             return None
 
-        data["item"] = self._cache.get_element(uri=URI(data["item"]["uri"]))
+        data["item"] = self.get_element_from_data(data["item"])
         if data["context"] is not None:
-            data["context"] = self._cache.get_element(uri=URI(data["context"]["uri"]))
+            data["context"] = self.get_element_from_data(data["context"], check_outdated=False)
         return data
 
     @property
@@ -207,26 +207,30 @@ class Client:
 
         :return: list of playlists saved in the user profile
         """
+
         return (self._cache.get_me()).playlists
 
-    def get_element_from_data(self, data: dict = None) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element_from_data(self, data: dict = None, check_outdated:bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri
         :param data: dict with spotify data you got from caching something yourself
+        :param check_outdated: whether to check if the element is outdated by refetching it
         """
+
         assert "uri" in data.keys()
         uri = URI(data["uri"])
         name = data["name"] if "name" in data.keys() else None
         display_name = data["display_name"] if "display_name" in data.keys() else None
         snapshot_id = data["snapshot_id"] if "snapshot_id" in data.keys() else None
 
-        return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id)
+        return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id, check_outdated=check_outdated)
 
     def get_element(self, uri: (URI | str)) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri
         :param uri: uri of the element
         """
+
         uri = _process_uri(uri=uri)
 
         return self._cache.get_element(uri=uri)
