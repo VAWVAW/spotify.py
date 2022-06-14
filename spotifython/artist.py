@@ -11,13 +11,15 @@ class Artist(Cacheable):
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
-    def to_dict(self, short: bool = False) -> dict:
-        if self._name is None:
-            self._cache.load(self.uri)
-        return {
-            "name": self._name,
-            "uri": str(self._uri)
-        }
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._name is None:
+                self._cache.load(self.uri)
+            ret["name"] = self._name
+        return ret
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)

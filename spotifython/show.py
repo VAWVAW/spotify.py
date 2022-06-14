@@ -16,25 +16,28 @@ class Show(PlayContext):
         self._images = None
         self._description = None
 
-    def to_dict(self, short: bool = False) -> dict:
-        if self._items is None:
-            self._cache.load(self.uri)
-        ret = {
-            "uri": str(self._uri),
-            "name": self._name,
-            "description": self._description,
-            "image": self._images
-        }
-        if not short:
-            ret["episodes"] = {
-                "items": [
-                    {
-                        "uri": str(item.uri),
-                        "name": item.name
-                    }
-                    for item in self._items
-                ]
-            }
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._items is None:
+                self._cache.load(self.uri)
+
+            ret["name"] = self._name
+            ret["description"] = self._description
+            ret["images"] = self._images
+
+            if not short:
+                ret["episodes"] = {
+                    "items": [
+                        {
+                            "uri": str(item.uri),
+                            "name": item.name
+                        }
+                        for item in self._items
+                    ]
+                }
         return ret
 
     @staticmethod

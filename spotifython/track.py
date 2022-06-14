@@ -17,24 +17,27 @@ class Track(Playable):
         self._album = None
         self._artists = None
 
-    def to_dict(self, short: bool = False) -> dict:
-        if self._artists is None:
-            self._cache.load(self.uri)
-        return {
-            "uri": str(self._uri),
-            "name": self._name,
-            "album": {
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._artists is None:
+                self._cache.load(self.uri)
+
+            ret["name"] = self._name
+            ret["album"] = {
                 "name": self._album.name,
                 "uri": str(self._album.uri)
-            },
-            "artists": [
+            }
+            ret["artists"] = [
                 {
                     "uri": str(artist.uri),
                     "name": artist.name
                 }
                 for artist in self._artists
             ]
-        }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:

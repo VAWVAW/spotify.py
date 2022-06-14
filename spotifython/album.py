@@ -17,31 +17,34 @@ class Album(PlayContext):
         self._items = None
         self._images = None
 
-    def to_dict(self, short: bool = False) -> dict:
-        if self._items is None:
-            self._cache.load(self.uri)
-        ret = {
-            "uri": str(self._uri),
-            "name": self._name,
-            "images": self._images,
-            "artists": [
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._items is None:
+                self._cache.load(self.uri)
+
+            ret["images"] = self._images
+            ret["name"] = self._name
+            ret["artists"] = [
                 {
                     "uri": str(artist.uri),
                     "name": artist.name
                 }
                 for artist in self._artists
             ]
-        }
-        if not short:
-            ret["tracks"] = {
-                "items": [
-                    {
-                        "uri": str(item.uri),
-                        "name": item.name
-                    }
-                    for item in self._items
-                ]
-            }
+
+            if not short:
+                ret["tracks"] = {
+                    "items": [
+                        {
+                            "uri": str(item.uri),
+                            "name": item.name
+                        }
+                        for item in self._items
+                    ]
+                }
         return ret
 
     @staticmethod

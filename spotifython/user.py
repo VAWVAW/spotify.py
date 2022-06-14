@@ -11,23 +11,29 @@ class User(Cacheable):
         super().__init__(uri=uri, cache=cache, name=display_name, **kwargs)
         self._playlists = None
 
-    def to_dict(self, short: bool = False) -> dict:
-        if self._playlists is None:
-            self._cache.load(self.uri)
-        return {
-            "display_name": self._name,
-            "uri": str(self._uri),
-            "playlists": {
-                "items": [
-                    {
-                        "uri": str(playlist.uri),
-                        "snapshot_id": playlist.snapshot_id,
-                        "name": playlist.name
-                    }
-                    for playlist in self._playlists
-                ]
-            }
-        }
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["display_name"] = self._name
+
+        if not minimal:
+            if self._playlists is None:
+                self._cache.load(self.uri)
+
+            ret["display_name"] = self._name
+
+            if not short:
+                ret["playlists"] = {
+                    "items": [
+                        {
+                            "uri": str(playlist.uri),
+                            "snapshot_id": playlist.snapshot_id,
+                            "name": playlist.name
+                        }
+                        for playlist in self._playlists
+                    ]
+                }
+
+        return ret
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
