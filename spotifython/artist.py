@@ -8,8 +8,8 @@ class Artist(Cacheable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
     def to_dict(self, short: bool = False) -> dict:
         if self._name is None:

@@ -32,10 +32,10 @@ class Cache:
     def cache_dir(self) -> str:
         return self._cache_dir
 
-    def get_element(self, uri: URI, name: str = None) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element(self, uri: URI, name: str = None, **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         if str(uri) not in self._by_uri.keys():
             # generate element based on type in uri
-            to_add = uri.type(uri=uri, cache=self, name=name)
+            to_add = uri.type(uri=uri, cache=self, name=name, **kwargs)
             self._by_uri[str(uri)] = to_add
             self._by_type[uri.type][str(uri)] = to_add
 

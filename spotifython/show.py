@@ -9,8 +9,8 @@ class Show(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
         self._items = None
         self._images = None

@@ -209,6 +209,19 @@ class Client:
         """
         return (self._cache.get_me()).playlists
 
+    def get_element_from_data(self, data: dict = None) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+        """
+        return the element with the matching uri
+        :param data: dict with spotify data you got from caching something yourself
+        """
+        assert "uri" in data.keys()
+        uri = URI(data["uri"])
+        name = data["name"] if "name" in data.keys() else None
+        display_name = data["display_name"] if "display_name" in data.keys() else None
+        snapshot_id = data["snapshot_id"] if "snapshot_id" in data.keys() else None
+
+        return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id)
+
     def get_element(self, uri: (URI | str)) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri

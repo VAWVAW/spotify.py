@@ -11,8 +11,8 @@ class Track(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
         self._album = None
         self._artists = None
