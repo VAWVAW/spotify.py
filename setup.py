@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="spotifython",
-    version="0.1.3",
+    version="0.1.4",
     author="VAWVAW",
     author_email="vawvaw@vaw-valentin.de",
     description="A caching python interface to readonly parts of the spotify api.",
@@ -21,7 +21,7 @@ setuptools.setup(
     },
     license="GPLv3",
     classifiers=[
-        "Development Status :: 3 - Alpha",
+        "Development Status :: 4 - Beta",
         "Intended Audience :: Developers",
         "Programming Language :: Python :: 3.10",
         "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
