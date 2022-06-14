@@ -225,7 +225,7 @@ class Client:
 
         return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id, check_outdated=check_outdated)
 
-    def get_element(self, uri: (URI | str)) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element(self, uri: (URI | str), **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri
         :param uri: uri of the element
@@ -233,9 +233,9 @@ class Client:
 
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_element(uri=uri)
+        return self._cache.get_element(uri=uri, **kwargs)
 
-    def get_playlist(self, uri: (URI | str)) -> Playlist:
+    def get_playlist(self, uri: (URI | str), **kwargs) -> Playlist:
         """
         return Playlist object with the given uri
 
@@ -243,9 +243,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_playlist(uri=uri)
+        return self._cache.get_playlist(uri=uri, **kwargs)
 
-    def get_album(self, uri: (URI | str)) -> Album:
+    def get_album(self, uri: (URI | str), **kwargs) -> Album:
         """
         return Album object with the given uri
 
@@ -253,9 +253,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_album(uri=uri)
+        return self._cache.get_album(uri=uri, **kwargs)
 
-    def get_show(self, uri: (URI | str)) -> Show:
+    def get_show(self, uri: (URI | str), **kwargs) -> Show:
         """
         return Show object with the given uri
 
@@ -263,9 +263,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_show(uri=uri)
+        return self._cache.get_show(uri=uri, **kwargs)
 
-    def get_episode(self, uri: (URI | str)) -> Episode:
+    def get_episode(self, uri: (URI | str), **kwargs) -> Episode:
         """
         return Episode object with the given uri
 
@@ -273,9 +273,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_episode(uri=uri)
+        return self._cache.get_episode(uri=uri, **kwargs)
 
-    def get_track(self, uri: (str | URI)) -> Track:
+    def get_track(self, uri: (str | URI), **kwargs) -> Track:
         """
         return Track object with the given uri
 
@@ -283,9 +283,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_track(uri=uri)
+        return self._cache.get_track(uri=uri, **kwargs)
 
-    def get_artist(self, uri: (URI | str)) -> Artist:
+    def get_artist(self, uri: (URI | str), **kwargs) -> Artist:
         """
         return Artist object with the given uri
 
@@ -293,9 +293,9 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_artist(uri=uri)
+        return self._cache.get_artist(uri=uri, **kwargs)
 
-    def get_user(self, uri: (str | URI)) -> User:
+    def get_user(self, uri: (str | URI), **kwargs) -> User:
         """
         return User object with the given uri
 
@@ -303,7 +303,7 @@ class Client:
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_user(uri=uri)
+        return self._cache.get_user(uri=uri, **kwargs)
 
     def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
         """
