@@ -10,9 +10,10 @@ class Playlist(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_playlist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None, check_outdated: bool = True, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
+        self._check_outdated = check_outdated
         self._snapshot_id = snapshot_id
 
         self._description = None
@@ -21,38 +22,45 @@ class Playlist(PlayContext):
         self._items = None
         self._images = None
 
-    def to_dict(self) -> dict:
-        return {
-            "uri": str(self._uri),
-            "description": self._description,
-            "owner":
-                {
-                    "uri": str(self._owner.uri),
-                    "display_name": self._owner.name
-                },
-            "images": self._images,
-            "snapshot_id": self._snapshot_id,
-            "name": self._name,
-            "public": self._public,
-            "tracks": {
-                "items": [
-                    {
-                        "added_at": item["added_at"],
-                        "track":{
-                            "uri": str(item["track"].uri),
-                            "name": item["track"].name
-                        }
-                    }
-                    for item in self._items
-                ]
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+        if self._snapshot_id is not None: ret["snapshot_id"] = self._snapshot_id
+
+        if not minimal:
+            if self._items is None:
+                self._cache.load(self.uri)
+
+            ret["images"] = self._images
+            ret["public"] = self._public
+            ret["description"] = self._description
+            ret["snapshot_id"] = self._snapshot_id
+            ret["name"] = self._name
+            ret["owner"] = {
+                "uri": str(self._owner.uri),
+                "display_name": self._owner.name
             }
-        }
+
+            if not short:
+                ret["tracks"] = {
+                    "items": [
+                        {
+                            "added_at": item["added_at"],
+                            "track":{
+                                "uri": str(item["track"].uri),
+                                "name": item["track"].name
+                            }
+                        }
+                        for item in self._items
+                    ]
+                }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
-        assert uri.type == "playlist"
+        assert uri.type == Playlist
 
         offset = 0
         limit = 100
@@ -87,7 +95,7 @@ class Playlist(PlayContext):
         assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
 
-        if self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
+        if self._check_outdated and self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
             raise ElementOutdated()
 
         self._name = data["name"]

@@ -7,25 +7,33 @@ class User(Cacheable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, display_name: str = None):
-        super().__init__(uri=uri, cache=cache, name=display_name)
+    def __init__(self, uri: URI, cache: Cache, display_name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=display_name, **kwargs)
         self._playlists = None
 
-    def to_dict(self) -> dict:
-        return {
-            "display_name": self._name,
-            "uri": str(self._uri),
-            "playlists": {
-                "items": [
-                    {
-                        "uri": str(playlist.uri),
-                        "snapshot_id": playlist.snapshot_id,
-                        "name": playlist.name
-                    }
-                    for playlist in self._playlists
-                ]
-            }
-        }
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["display_name"] = self._name
+
+        if not minimal:
+            if self._playlists is None:
+                self._cache.load(self.uri)
+
+            ret["display_name"] = self._name
+
+            if not short:
+                ret["playlists"] = {
+                    "items": [
+                        {
+                            "uri": str(playlist.uri),
+                            "snapshot_id": playlist.snapshot_id,
+                            "name": playlist.name
+                        }
+                        for playlist in self._playlists
+                    ]
+                }
+
+        return ret
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)

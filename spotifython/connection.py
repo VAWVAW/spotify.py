@@ -1,10 +1,13 @@
 import requests
 import base64
 import time
+import logging
 
 from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData
 from .authentication import Authentication
 from .scope import Scope
+
+log = logging.getLogger(__name__)
 
 
 class Connection:
@@ -42,12 +45,14 @@ class Connection:
                 raise NotFoundException(response.text)
             case 429:
                 # rate limit
+                log.warning("rate limit exceeded; will retry in 5 seconds")
                 time.sleep(5)
                 raise Retry()
             case 500:
                 raise InternalServerError(response.text)
             case 503:
                 # service unavailable
+                log.warning("service unavailable; will retry in 1 second")
                 time.sleep(1)
                 raise Retry()
 
@@ -57,11 +62,20 @@ class Connection:
         url = "https://api.spotify.com/v1/" + endpoint
         if self._authentication.token is None:
             self._get_token()
-        response = requests.request(method, url, data=data, headers=self._get_header())
-        try:
-            data = self._evaluate_response(response)
-        except Retry:
-            data = self._evaluate_response(requests.request(method, url, data=data, headers=self._get_header()))
+        if data is not None:
+            log.debug("%s %s with %s", method, url, data)
+        retries = 5
+        while retries > 0:
+            response = requests.request(method, url, data=data, headers=self._get_header())
+            try:
+                data = self._evaluate_response(response)
+            except Retry:
+                retries -= 1
+                log.info("retrying (%d)", retries)
+            else:
+                break
+        else:
+            log.error("request ran out of retries")
         return data
 
     @staticmethod
@@ -204,8 +218,10 @@ class Connection:
 
     def _get_token(self):
         if self._authentication.refresh_token is not None:
+            log.info("refreshing access token")
             self._refresh_access_token()
         else:
+            log.info("requesting access and refresh token")
             self._request_token()
 
     def dump_token_data(self) -> dict:

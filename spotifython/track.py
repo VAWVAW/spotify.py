@@ -11,28 +11,33 @@ class Track(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
         self._album = None
         self._artists = None
 
-    def to_dict(self) -> dict:
-        return {
-            "uri": str(self._uri),
-            "name": self._name,
-            "album": {
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._artists is None:
+                self._cache.load(self.uri)
+
+            ret["name"] = self._name
+            ret["album"] = {
                 "name": self._album.name,
                 "uri": str(self._album.uri)
-            },
-            "artists": [
+            }
+            ret["artists"] = [
                 {
                     "uri": str(artist.uri),
                     "name": artist.name
                 }
                 for artist in self._artists
             ]
-        }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:

@@ -1,4 +1,5 @@
 import json
+from typing import Type
 
 from .connection import Connection
 from .cache import Cache
@@ -182,86 +183,7 @@ class Client:
         endpoint = "me/player"
         self._connection.make_request(method="PUT", endpoint=endpoint, data=json.dumps({"device_ids": [device_id], "play": play}))
 
-    @property
-    def user_playlists(self) -> list[Playlist]:
-        """
-        get playlists of current user
-
-        :return: list of playlists saved in the user profile
-        """
-        return (self._cache.get_me()).playlists
-
-    def get_playlist(self, uri: (URI | str)) -> Playlist:
-        """
-        return Playlist object for the given id
-
-        :param uri: uri of the playlist
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_playlist(uri=uri)
-
-    def get_album(self, uri: (URI | str)) -> Album:
-        """
-        return Album object for the given id
-
-        :param uri: uri of the album
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_album(uri=uri)
-
-    def get_show(self, uri: (URI | str)) -> Show:
-        """
-        return Show object for the given id
-
-        :param uri: uri of the Show
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_show(uri=uri)
-
-    def get_episode(self, uri: (URI | str)) -> Episode:
-        """
-        return Episode object for the given id
-
-        :param uri: uri of the episode
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_episode(uri=uri)
-
-    def get_track(self, uri: (str | URI)) -> Track:
-        """
-        return Track object for the given id
-
-        :param uri: uri of the track
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_track(uri=uri)
-
-    def get_artist(self, uri: (URI | str)) -> Artist:
-        """
-        return Artist object for the given id
-
-        :param uri: uri of the artist
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_artist(uri=uri)
-
-    def get_user(self, uri: (str | URI)) -> User:
-        """
-        return User object for the given id
-
-        :param uri: uri of the user
-        """
-        uri = _process_uri(uri=uri)
-
-        return self._cache.get_user(uri=uri)
-
-    def get_playing(self) -> dict:
+    def get_playing(self) -> (dict | None):
         """
         returns information to playback state
 
@@ -269,7 +191,119 @@ class Client:
         """
         endpoint = "me/player"
 
-        return self._connection.make_request(method="GET", endpoint=endpoint)
+        data = self._connection.make_request(method="GET", endpoint=endpoint)
+        if data is None:
+            return None
+
+        data["item"] = self.get_element_from_data(data["item"])
+        if data["context"] is not None:
+            data["context"] = self.get_element_from_data(data["context"], check_outdated=False)
+        return data
+
+    @property
+    def user_playlists(self) -> list[Playlist]:
+        """
+        get playlists of current user
+
+        :return: list of playlists saved in the user profile
+        """
+
+        return (self._cache.get_me()).playlists
+
+    def get_element_from_data(self, data: dict = None, check_outdated:bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+        """
+        return the element with the matching uri
+        :param data: dict with spotify data you got from caching something yourself
+        :param check_outdated: whether to check if the element is outdated by refetching it
+        """
+
+        assert "uri" in data.keys()
+        uri = URI(data["uri"])
+        name = data["name"] if "name" in data.keys() else None
+        display_name = data["display_name"] if "display_name" in data.keys() else None
+        snapshot_id = data["snapshot_id"] if "snapshot_id" in data.keys() else None
+
+        return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id, check_outdated=check_outdated)
+
+    def get_element(self, uri: (URI | str), **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+        """
+        return the element with the matching uri
+        :param uri: uri of the element
+        """
+
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_element(uri=uri, **kwargs)
+
+    def get_playlist(self, uri: (URI | str), **kwargs) -> Playlist:
+        """
+        return Playlist object with the given uri
+
+        :param uri: uri of the playlist
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_playlist(uri=uri, **kwargs)
+
+    def get_album(self, uri: (URI | str), **kwargs) -> Album:
+        """
+        return Album object with the given uri
+
+        :param uri: uri of the album
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_album(uri=uri, **kwargs)
+
+    def get_show(self, uri: (URI | str), **kwargs) -> Show:
+        """
+        return Show object with the given uri
+
+        :param uri: uri of the Show
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_show(uri=uri, **kwargs)
+
+    def get_episode(self, uri: (URI | str), **kwargs) -> Episode:
+        """
+        return Episode object with the given uri
+
+        :param uri: uri of the episode
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_episode(uri=uri, **kwargs)
+
+    def get_track(self, uri: (str | URI), **kwargs) -> Track:
+        """
+        return Track object with the given uri
+
+        :param uri: uri of the track
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_track(uri=uri, **kwargs)
+
+    def get_artist(self, uri: (URI | str), **kwargs) -> Artist:
+        """
+        return Artist object with the given uri
+
+        :param uri: uri of the artist
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_artist(uri=uri, **kwargs)
+
+    def get_user(self, uri: (str | URI), **kwargs) -> User:
+        """
+        return User object with the given uri
+
+        :param uri: uri of the user
+        """
+        uri = _process_uri(uri=uri)
+
+        return self._cache.get_user(uri=uri, **kwargs)
 
     def search(self, query: str, element_type: str, limit: int = 5, offset: int = 0) -> dict[str, list[Cacheable]]:
         """

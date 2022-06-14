@@ -10,41 +10,48 @@ class Album(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_album` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
-        super().__init__(uri=uri, cache=cache, name=name)
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+        super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
         self._artists = None
         self._items = None
         self._images = None
 
-    def to_dict(self) -> dict:
-        return {
-            "uri": str(self._uri),
-            "name": self._name,
-            "images": self._images,
-            "artists": [
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = {"uri": str(self._uri)}
+        if self._name is not None: ret["name"] = self._name
+
+        if not minimal:
+            if self._items is None:
+                self._cache.load(self.uri)
+
+            ret["images"] = self._images
+            ret["name"] = self._name
+            ret["artists"] = [
                 {
                     "uri": str(artist.uri),
                     "name": artist.name
                 }
                 for artist in self._artists
-            ],
-            "tracks": {
-                "items": [
-                    {
-                        "uri": str(item.uri),
-                        "name": item.name
-                    }
-                    for item in self._items
-                ]
-            }
-        }
+            ]
+
+            if not short:
+                ret["tracks"] = {
+                    "items": [
+                        {
+                            "uri": str(item.uri),
+                            "name": item.name
+                        }
+                        for item in self._items
+                    ]
+                }
+        return ret
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:
         assert isinstance(uri, URI)
         assert isinstance(connection, Connection)
-        assert uri.type == "album"
+        assert uri.type == Album
 
         offset = 0
         limit = 50
@@ -89,7 +96,7 @@ class Album(PlayContext):
         for artist in data["artists"]:
             if artist is None:
                 continue
-            self._items.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
+            self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
     def tracks(self) -> list[Track]:

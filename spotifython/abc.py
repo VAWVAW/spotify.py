@@ -3,7 +3,7 @@ from abc import ABC, abstractmethod
 
 
 class Cacheable(ABC):
-    def __init__(self, uri: URI, cache: Cache, name: str = None):
+    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         assert isinstance(uri, URI)
         assert isinstance(cache, Cache)
         assert isinstance(name, (str | None))
@@ -26,7 +26,7 @@ class Cacheable(ABC):
         pass
 
     @abstractmethod
-    def to_dict(self) -> dict:
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         pass
 
     @staticmethod
