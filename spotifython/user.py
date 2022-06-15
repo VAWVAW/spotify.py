@@ -227,7 +227,7 @@ class Me(User):
         return self._name
 
     @property
-    def tracks(self) -> list[Track]:
+    def tracks(self) -> list[dict[str, (str | Track)]]:
         if self._tracks is None:
             self._cache.load_me()
         return self._tracks.copy()
