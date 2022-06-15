@@ -201,7 +201,7 @@ class Client:
         return data
 
     @property
-    def get_me(self) -> Me:
+    def me(self) -> Me:
         """
         get the profile of the user who is authenticated
 
@@ -219,6 +219,16 @@ class Client:
         """
 
         return self._cache.get_me().playlists
+
+    @property
+    def saved_tracks(self) -> list[Track]:
+        """
+        get tracks of current user
+
+        :return: list of tracks saved in the user profile
+        """
+
+        return [item["track"] for item in self.me.tracks]
 
     def get_element_from_data(self, data: dict = None, check_outdated:bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
