@@ -3,7 +3,7 @@ from typing import Type
 
 from .connection import Connection
 from .cache import Cache
-from .user import User
+from .user import User, Me
 from .playlist import Playlist
 from .track import Track
 from .uri import URI
@@ -201,6 +201,16 @@ class Client:
         return data
 
     @property
+    def get_me(self) -> Me:
+        """
+        get the profile of the user who is authenticated
+
+        :return: user profile
+        """
+
+        return self._cache.get_me()
+
+    @property
     def user_playlists(self) -> list[Playlist]:
         """
         get playlists of current user
@@ -208,7 +218,7 @@ class Client:
         :return: list of playlists saved in the user profile
         """
 
-        return (self._cache.get_me()).playlists
+        return self._cache.get_me().playlists
 
     def get_element_from_data(self, data: dict = None, check_outdated:bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
