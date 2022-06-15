@@ -225,25 +225,27 @@ class Client:
 
         return self._cache.get_element(uri=uri, name=name, display_name=display_name, shapshot_id=snapshot_id, check_outdated=check_outdated)
 
-    def get_element(self, uri: (URI | str), **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element(self, uri: (URI | str), check_outdated: bool = True, **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri
         :param uri: uri of the element
+        :param check_outdated: see :py:meth:`~spotifython.Client.get_playlist`
         """
 
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_element(uri=uri, **kwargs)
+        return self._cache.get_element(uri=uri,check_outdated=check_outdated,  **kwargs)
 
-    def get_playlist(self, uri: (URI | str), **kwargs) -> Playlist:
+    def get_playlist(self, uri: (URI | str), check_outdated: bool = True, **kwargs) -> Playlist:
         """
         return Playlist object with the given uri
 
         :param uri: uri of the playlist
+        :param check_outdated: whether to check if the playlist is outdated; True can lead to excessive api calls if the snapshot id is not found
         """
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_playlist(uri=uri, **kwargs)
+        return self._cache.get_playlist(uri=uri, check_outdated=check_outdated, **kwargs)
 
     def get_album(self, uri: (URI | str), **kwargs) -> Album:
         """
