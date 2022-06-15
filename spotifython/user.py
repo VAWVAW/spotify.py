@@ -7,6 +7,7 @@ class User(Cacheable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
     """
+
     def __init__(self, uri: URI, cache: Cache, display_name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=display_name, **kwargs)
         self._playlists = None
@@ -110,6 +111,7 @@ class Me(User):
         self._uri = None
         self._cache = cache
         self._playlists = None
+        self._tracks = None
 
     @staticmethod
     def make_request(uri: (URI, None), connection: Connection) -> dict:
@@ -121,7 +123,7 @@ class Me(User):
         )
         base = connection.make_request("GET", endpoint)
 
-        # get playlists
+        # get saved playlists
         offset = 0
         limit = 50
         endpoint = connection.add_parameters_to_endpoint(
@@ -149,6 +151,34 @@ class Me(User):
                     break
         base["playlists"] = data
 
+        # get saved tracks
+        offset = 0
+        limit = 50
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/tracks",
+            offset=offset,
+            limit=limit,
+            fields="items(uri,name)"
+        )
+
+        data = connection.make_request("GET", endpoint)
+        # check for long data that needs paging
+        if data["next"] is not None:
+            while True:
+                endpoint = connection.add_parameters_to_endpoint(
+                    "me/tracks",
+                    offset=offset,
+                    limit=limit,
+                    fields="items(uri,name)"
+                )
+                offset += limit
+                extra_data = connection.make_request("GET", endpoint)
+                data["items"] += extra_data["items"]
+
+                if extra_data["next"] is None:
+                    break
+        base["tracks"] = data
+
         return base
 
     def load_dict(self, data: dict):
@@ -164,6 +194,26 @@ class Me(User):
                 name=playlist["name"],
                 snapshot_id=playlist["snapshot_id"]
             ))
+        self._tracks = []
+        for track in data["tracks"]["items"]:
+            self._tracks.append({
+                "track": self._cache.get_track(uri=URI(track["track"]["uri"]), name=track["track"]["name"]),
+                "added_at": track["added_at"]
+            })
+
+    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        ret = super().to_dict(short=short, minimal=minimal)
+        if not short:
+            ret["tracks"] = {
+                "items": [
+                    {
+                        "added_at": item["added_at"],
+                        "track": item["track"].to_dict(minimal=True)
+                    }
+                    for item in self._tracks
+                ]
+            }
+        return ret
 
     @property
     def display_name(self) -> str:
@@ -183,10 +233,15 @@ class Me(User):
             self._cache.load_me()
         return self._name
 
+    @property
+    def tracks(self) -> list[Track]:
+        if self._tracks is None:
+            self._cache.load_me()
+        return self._tracks.copy()
+
 
 from .playlist import Playlist
 from .cache import Cache
 from .uri import URI
 from .connection import Connection
-
-
+from .track import Track
