@@ -24,14 +24,7 @@ class User(Cacheable):
 
             if not short:
                 ret["playlists"] = {
-                    "items": [
-                        {
-                            "uri": str(playlist.uri),
-                            "snapshot_id": playlist.snapshot_id,
-                            "name": playlist.name
-                        }
-                        for playlist in self._playlists
-                    ]
+                    "items": [playlist.to_dict(minimal=True) for playlist in self._playlists]
                 }
 
         return ret

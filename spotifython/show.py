@@ -30,13 +30,7 @@ class Show(PlayContext):
 
             if not short:
                 ret["episodes"] = {
-                    "items": [
-                        {
-                            "uri": str(item.uri),
-                            "name": item.name
-                        }
-                        for item in self._items
-                    ]
+                    "items": [item.to_dict(minimal=True) for item in self._items]
                 }
         return ret
 

@@ -26,10 +26,7 @@ class Episode(Playable):
 
             ret["name"] = self._name
             ret["images"] = self._images
-            ret["show"] = {
-                "uri": str(self._show.uri),
-                "name": self._show.name
-            }
+            ret["show"] = self._show.to_dict(minimal=True)
         return ret
 
     @staticmethod

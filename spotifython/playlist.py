@@ -36,20 +36,14 @@ class Playlist(PlayContext):
             ret["description"] = self._description
             ret["snapshot_id"] = self._snapshot_id
             ret["name"] = self._name
-            ret["owner"] = {
-                "uri": str(self._owner.uri),
-                "display_name": self._owner.name
-            }
+            ret["owner"] = self._owner.to_dict(minimal=True)
 
             if not short:
                 ret["tracks"] = {
                     "items": [
                         {
                             "added_at": item["added_at"],
-                            "track":{
-                                "uri": str(item["track"].uri),
-                                "name": item["track"].name
-                            }
+                            "track": item["track"].to_dict(minimal=True)
                         }
                         for item in self._items
                     ]
