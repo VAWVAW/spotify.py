@@ -87,6 +87,12 @@ class Show(PlayContext):
         return self._items.copy()
 
     @property
+    def items(self) -> list[Episode]:
+        if self._items is None:
+            self._cache.load(uri=self._uri)
+        return self._items.copy()
+
+    @property
     def images(self) -> list[dict[str, (str, int, None)]]:
         """
         get list of the image registered with spotify in different sizes

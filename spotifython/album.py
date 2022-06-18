@@ -99,6 +99,12 @@ class Album(PlayContext):
             self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
 
     @property
+    def items(self) -> list[Track]:
+        if self._items is None:
+            self._cache.load(uri=self._uri)
+        return self._items.copy()
+
+    @property
     def tracks(self) -> list[Track]:
         if self._items is None:
             self._cache.load(uri=self._uri)

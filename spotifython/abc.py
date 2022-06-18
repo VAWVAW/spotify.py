@@ -58,7 +58,14 @@ class PlayContext(Cacheable, ABC):
         """
         pass
 
+    @property
+    @abstractmethod
+    def items(self) -> list[(Playable | Track | Episode)]:
+        pass
+
 
 from .uri import URI
 from .connection import Connection
 from .cache import Cache
+from .track import Track
+from .episode import Episode
