@@ -14,7 +14,7 @@ from .album import Album
 from .artist import Artist
 from .show import Show
 from .authentication import Authentication
-from .me import Me
+from .me import Me, SavedTracks
 
 
 def _process_uri(uri: (str | URI)) -> URI:
@@ -222,14 +222,14 @@ class Client:
         return self._cache.get_me().playlists
 
     @property
-    def saved_tracks(self) -> list[Track]:
+    def saved_tracks(self) -> SavedTracks:
         """
         get tracks of current user
 
         :return: list of tracks saved in the user profile
         """
 
-        return [item["track"] for item in self.me.tracks]
+        return self._cache.get_saved_tracks()
 
     def get_element_from_data(self, data: dict = None, check_outdated: bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """

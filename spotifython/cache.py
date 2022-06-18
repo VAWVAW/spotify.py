@@ -18,6 +18,7 @@ class Cache:
         self._connection = connection
         self._by_uri = {}
         self._me = None
+        self._saved_tracks = None
         self._by_type = {
             Playlist: {},
             Episode: {},
@@ -85,13 +86,16 @@ class Cache:
             self._me = Me(cache=self, **kwargs)
         return self._me
 
-    # noinspection PyTypeChecker
-    def load_me(self):
-        element = self.get_me()
+    def get_saved_tracks(self, **kwargs) -> SavedTracks:
+        if self._saved_tracks is None:
+            self._saved_tracks = SavedTracks(cache=self, **kwargs)
+        return self._saved_tracks
 
+    # noinspection PyTypeChecker
+    def load_builtin(self, element: Cacheable, name: str):
         # try to load from cache
         if self._cache_dir is not None:
-            path = os.path.join(self._cache_dir, "me")
+            path = os.path.join(self._cache_dir, name)
             try:
                 with open(path, "r") as in_file:
                     data = json.load(in_file)
@@ -114,7 +118,7 @@ class Cache:
 
         # cache if needed
         if data["fetched"] and self._cache_dir is not None:
-            path = os.path.join(self._cache_dir, "me")
+            path = os.path.join(self._cache_dir, name)
             with open(path, "w") as out_file:
                 json.dump(element.to_dict(), out_file)
 
@@ -198,4 +202,5 @@ from .track import Track
 from .artist import Artist
 from .album import Album
 from .show import Show
-from .me import Me
+from .me import Me, SavedTracks
+from .abc import Cacheable
