@@ -98,8 +98,8 @@ class User(Cacheable):
 
 
 class Me(User):
-    # noinspection PyMissingConstructor
-    def __init__(self, cache: Cache):
+    # noinspection PyMissingConstructor,PyUnusedLocal
+    def __init__(self, cache: Cache, **kwargs):
         assert isinstance(cache, Cache)
         self._uri = None
         self._cache = cache
@@ -207,6 +207,12 @@ class Me(User):
                 ]
             }
         return ret
+
+    @property
+    def uri(self) -> str:
+        if self._uri is None:
+            self._cache.load_me()
+        return self._uri
 
     @property
     def display_name(self) -> str:
