@@ -8,7 +8,7 @@ from .connection import Connection
 
 class Episode(Playable):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_episode` instead.
     """
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)

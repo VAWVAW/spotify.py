@@ -9,7 +9,7 @@ from .artist import Artist
 
 class Track(Playable):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_track` instead.
     """
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)

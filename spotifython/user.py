@@ -5,7 +5,7 @@ from .abc import Cacheable
 
 class User(Cacheable):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_user` instead.
     """
 
     def __init__(self, uri: URI, cache: Cache, display_name: str = None, **kwargs):
