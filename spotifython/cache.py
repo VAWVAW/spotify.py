@@ -191,10 +191,11 @@ class Cache:
 
 
 from .uri import URI
-from .user import User, Me
+from .user import User
 from .playlist import Playlist
 from .episode import Episode
 from .track import Track
 from .artist import Artist
 from .album import Album
 from .show import Show
+from .me import Me

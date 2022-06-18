@@ -3,7 +3,7 @@ from typing import Type
 
 from .connection import Connection
 from .cache import Cache
-from .user import User, Me
+from .user import User
 from .playlist import Playlist
 from .track import Track
 from .uri import URI
@@ -14,6 +14,7 @@ from .album import Album
 from .artist import Artist
 from .show import Show
 from .authentication import Authentication
+from .me import Me
 
 
 def _process_uri(uri: (str | URI)) -> URI:
