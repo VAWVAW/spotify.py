@@ -230,7 +230,7 @@ class Client:
 
         return [item["track"] for item in self.me.tracks]
 
-    def get_element_from_data(self, data: dict = None, check_outdated:bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element_from_data(self, data: dict = None, check_outdated: bool = False) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
         """
         return the element with the matching uri
         :param data: dict with spotify data you got from caching something yourself
@@ -254,7 +254,7 @@ class Client:
 
         uri = _process_uri(uri=uri)
 
-        return self._cache.get_element(uri=uri,check_outdated=check_outdated,  **kwargs)
+        return self._cache.get_element(uri=uri, check_outdated=check_outdated,  **kwargs)
 
     def get_playlist(self, uri: (URI | str), check_outdated: bool = True, **kwargs) -> Playlist:
         """
