@@ -26,6 +26,7 @@ class Cache:
             Album: {},
             Artist: {},
             Show: {},
+            SavedTracks: {},
             User: {}
         }
 
@@ -88,7 +89,10 @@ class Cache:
 
     def get_saved_tracks(self, **kwargs) -> SavedTracks:
         if self._saved_tracks is None:
-            self._saved_tracks = SavedTracks(cache=self, **kwargs)
+            to_add = SavedTracks(cache=self, **kwargs)
+            self._saved_tracks = to_add
+            self._by_uri[str(to_add.uri)] = to_add
+            self._by_type[SavedTracks][str(to_add.uri)] = to_add
         return self._saved_tracks
 
     # noinspection PyTypeChecker

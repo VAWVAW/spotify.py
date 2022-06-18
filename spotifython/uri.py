@@ -20,7 +20,7 @@ class URI:
             self._type = datatypes[uri_elements[1]]
         if len(uri_elements) == 4:
             if uri_elements[1] == "user" and uri_elements[3] == "collection":
-                self._type = PlayContext
+                self._type = SavedTracks
 
     def __str__(self):
         """
@@ -51,4 +51,4 @@ from .artist import Artist
 from .album import Album
 from .show import Show
 from .datatypes import datatypes
-from .abc import PlayContext
+from .me import SavedTracks

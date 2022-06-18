@@ -80,7 +80,7 @@ class SavedTracks(PlayContext):
     @property
     def uri(self) -> URI:
         if self._uri is None:
-            self._uri = URI(str(self._cache.get_me().uri)+":context")
+            self._uri = URI(str(self._cache.get_me().uri)+":collection")
         return self._uri
 
     @property
