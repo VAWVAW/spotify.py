@@ -36,7 +36,7 @@ class URI:
         return self._id
 
     @property
-    def type(self) -> Type[Playlist | User | Episode | Track | Album | Artist | Show | PlayContext]:
+    def type(self) -> Type[Playlist | User | Episode | Track | Album | Artist | Show | SavedTracks | PlayContext]:
         """
         :return: type of the element
         """
@@ -52,3 +52,4 @@ from .album import Album
 from .show import Show
 from .datatypes import datatypes
 from .me import SavedTracks
+from .abc import PlayContext
