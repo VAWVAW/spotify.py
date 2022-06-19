@@ -86,6 +86,10 @@ class User(Cacheable):
 
     @property
     def display_name(self) -> str:
+        """
+        Same as name
+        """
+
         if self._name is None:
             self._cache.load(self.uri)
         return self._name

@@ -91,6 +91,12 @@ class SavedTracks(PlayContext):
 
     @property
     def images(self) -> list[dict[str, (int, str, None)]]:
+        """
+        The saved tracks have no image associated.
+
+        :return: []
+        """
+
         return []
 
 
