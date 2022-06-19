@@ -6,7 +6,7 @@ from .abc import PlayContext
 
 class SavedTracks(PlayContext):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Me.saved_tracks` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.client.saved_tracks` instead.
     """
 
     # noinspection PyMissingConstructor,PyUnusedLocal
