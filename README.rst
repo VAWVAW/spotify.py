@@ -7,7 +7,7 @@ Key Features
 ------------
 - caching requested data (note that non public data will be cached)
 
-Installing
+Installation
 ----------
 **python 3.10 or higher is required**
 
