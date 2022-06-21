@@ -9,7 +9,7 @@ from .artist import Artist
 
 class Track(Playable):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_track` instead.
     """
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
@@ -26,17 +26,8 @@ class Track(Playable):
                 self._cache.load(self.uri)
 
             ret["name"] = self._name
-            ret["album"] = {
-                "name": self._album.name,
-                "uri": str(self._album.uri)
-            }
-            ret["artists"] = [
-                {
-                    "uri": str(artist.uri),
-                    "name": artist.name
-                }
-                for artist in self._artists
-            ]
+            ret["album"] = self._album.to_dict(minimal=True)
+            ret["artists"] = [artist.to_dict(minimal=True) for artist in self._artists]
         return ret
 
     @staticmethod

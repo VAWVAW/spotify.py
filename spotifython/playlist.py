@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .connection import Connection
 from .user import User
 from .cache import Cache
@@ -36,20 +38,14 @@ class Playlist(PlayContext):
             ret["description"] = self._description
             ret["snapshot_id"] = self._snapshot_id
             ret["name"] = self._name
-            ret["owner"] = {
-                "uri": str(self._owner.uri),
-                "display_name": self._owner.name
-            }
+            ret["owner"] = self._owner.to_dict(minimal=True)
 
             if not short:
                 ret["tracks"] = {
                     "items": [
                         {
                             "added_at": item["added_at"],
-                            "track":{
-                                "uri": str(item["track"].uri),
-                                "name": item["track"].name
-                            }
+                            "track": item["track"].to_dict(minimal=True)
                         }
                         for item in self._items
                     ]
@@ -138,10 +134,10 @@ class Playlist(PlayContext):
         return self._public
 
     @property
-    def items(self) -> list[dict[str, (Playable | str)]]:
+    def items(self) -> list[(Track | Episode | Playable)]:
         if self._items is None:
             self._cache.load(uri=self._uri)
-        return self._items.copy()
+        return [item["track"] for item in self._items]
 
     @property
     def images(self) -> list[dict[str, (str, int, None)]]:
@@ -179,3 +175,7 @@ class Playlist(PlayContext):
                 results.append(item["track"])
 
         return results
+
+
+from .track import Track
+from .episode import Episode

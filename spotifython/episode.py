@@ -8,7 +8,7 @@ from .connection import Connection
 
 class Episode(Playable):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_episode` instead.
     """
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
@@ -26,10 +26,7 @@ class Episode(Playable):
 
             ret["name"] = self._name
             ret["images"] = self._images
-            ret["show"] = {
-                "uri": str(self._show.uri),
-                "name": self._show.name
-            }
+            ret["show"] = self._show.to_dict(minimal=True)
         return ret
 
     @staticmethod

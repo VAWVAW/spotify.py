@@ -7,7 +7,7 @@ from .episode import Episode
 
 class Show(PlayContext):
     """
-    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_artist` instead.
+    Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_show` instead.
     """
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
@@ -30,13 +30,7 @@ class Show(PlayContext):
 
             if not short:
                 ret["episodes"] = {
-                    "items": [
-                        {
-                            "uri": str(item.uri),
-                            "name": item.name
-                        }
-                        for item in self._items
-                    ]
+                    "items": [item.to_dict(minimal=True) for item in self._items]
                 }
         return ret
 
@@ -88,6 +82,12 @@ class Show(PlayContext):
 
     @property
     def episodes(self) -> list[Episode]:
+        if self._items is None:
+            self._cache.load(uri=self._uri)
+        return self._items.copy()
+
+    @property
+    def items(self) -> list[Episode]:
         if self._items is None:
             self._cache.load(uri=self._uri)
         return self._items.copy()

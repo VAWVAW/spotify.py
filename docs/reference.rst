@@ -68,6 +68,16 @@ User
 
 .. autoclass:: User
 
+Me
+++
+
+.. autoclass:: Me
+
+Saved Tracks
+++++++++++++
+
+.. autoclass:: SavedTracks
+
 
 Errors
 ------
