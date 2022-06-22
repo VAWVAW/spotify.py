@@ -21,7 +21,7 @@ class SavedTracks(PlayContext):
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {
             "name": self._name,
-            "uri": self.uri
+            "uri": str(self.uri)
         }
         if not minimal and not short:
             ret["tracks"] = {
