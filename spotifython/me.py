@@ -20,7 +20,7 @@ class SavedTracks(PlayContext):
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {"name": self._name}
-        if not short:
+        if not minimal and not short:
             ret["tracks"] = {
                 "items": [
                     {
