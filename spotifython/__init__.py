@@ -15,7 +15,7 @@ __title__ = 'spotifython'
 __author__ = 'VAWVAW'
 __license__ = 'MIT'
 __copyright__ = 'Copyright 2022-present VAWVAW'
-__version__ = '0.1.5'
+__version__ = '0.1.6'
 
 # noinspection PyUnboundLocalVariable
 __path__ = __import__('pkgutil').extend_path(__path__, __name__)

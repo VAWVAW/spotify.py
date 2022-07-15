@@ -19,8 +19,11 @@ class SavedTracks(PlayContext):
         self._uri = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        ret = {"name": self._name}
-        if not short:
+        ret = {
+            "name": self._name,
+            "uri": str(self.uri)
+        }
+        if not minimal and not short:
             ret["tracks"] = {
                 "items": [
                     {
@@ -80,7 +83,7 @@ class SavedTracks(PlayContext):
     @property
     def uri(self) -> URI:
         if self._uri is None:
-            self._uri = URI(str(self._cache.get_me().uri)+":collection")
+            self._uri = URI(str(self._cache.get_me().uri) + ":collection")
         return self._uri
 
     @property

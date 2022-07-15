@@ -13,7 +13,7 @@ class User(Cacheable):
         self._playlists = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        ret = {"uri": str(self._uri)}
+        ret = {"uri": str(self.uri)}
         if self._name is not None: ret["display_name"] = self._name
 
         if not minimal:
