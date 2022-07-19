@@ -3,7 +3,7 @@ import base64
 import time
 import logging
 
-from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData, PayloadToLarge
+from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData, PayloadToLarge, HttpError
 from .authentication import Authentication
 from .scope import Scope
 
@@ -57,6 +57,12 @@ class Connection:
                 log.warning("service unavailable; will retry in 1 second")
                 time.sleep(1)
                 raise Retry()
+            case x:
+                if x >= 300:
+                    raise HttpError((x, response.text))
+                if x < 200:
+                    time.sleep(1)
+                    raise Retry()
 
         return response.json()
 
