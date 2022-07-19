@@ -28,6 +28,12 @@ class NotFoundException(SpotifyException):
     """
 
 
+class PayloadToLarge(SpotifyException):
+    """
+    corresponds to a 413 error from the Spotify API
+    """
+
+
 class NotModified(SpotifyException):
     """
     corresponds to a 304 error from the Spotify API

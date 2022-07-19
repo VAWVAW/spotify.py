@@ -3,7 +3,7 @@ import base64
 import time
 import logging
 
-from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData
+from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData, PayloadToLarge
 from .authentication import Authentication
 from .scope import Scope
 
@@ -43,6 +43,8 @@ class Connection:
                 raise ForbiddenException(response.text)
             case 404:
                 raise NotFoundException(response.text)
+            case 413:
+                raise PayloadToLarge(response.text)
             case 429:
                 # rate limit
                 log.warning("rate limit exceeded; will retry in 5 seconds")
