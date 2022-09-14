@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from .abc import PlayContext
 from .uri import URI
 from .cache import Cache
@@ -29,7 +31,7 @@ class Show(PlayContext):
             ret["images"] = self._images
 
             if not short:
-                ret["episodes"] = {
+                ret["albums"] = {
                     "items": [item.to_dict(minimal=True) for item in self._items]
                 }
         return ret
@@ -43,7 +45,7 @@ class Show(PlayContext):
         offset = 0
         limit = 50
         endpoint = connection.add_parameters_to_endpoint(
-            "shows/{id}".format(id=uri.id),
+            "albums/{id}".format(id=uri.id),
             offset=offset,
             limit=limit
         )
@@ -51,16 +53,16 @@ class Show(PlayContext):
         data = connection.make_request("GET", endpoint)
 
         # check for long data that needs paging
-        if data["episodes"]["next"] is not None:
+        if data["albums"]["next"] is not None:
             while True:
                 offset += limit
                 endpoint = connection.add_parameters_to_endpoint(
-                    "shows/{id}/episodes".format(id=uri.id),
+                    "albums/{id}/albums".format(id=uri.id),
                     offset=offset,
                     limit=limit
                 )
                 extra_data = connection.make_request("GET", endpoint)
-                data["episodes"]["items"] += extra_data["items"]
+                data["albums"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
                     break
@@ -75,7 +77,7 @@ class Show(PlayContext):
         self._description = data["description"]
         self._items = []
 
-        for episode in data["episodes"]["items"]:
+        for episode in data["albums"]["items"]:
             if episode is None:
                 continue
             self._items.append(self._cache.get_episode(uri=URI(episode["uri"]), name=episode["name"]))
@@ -108,3 +110,45 @@ class Show(PlayContext):
         if self._description is None:
             self._cache.load(uri=self._uri)
         return self._description
+
+    @staticmethod
+    def save(shows: list[Show]):
+        """
+        add the given albums to saved albums of the current user
+        """
+        assert isinstance(shows, list)
+        assert len(shows) > 0
+
+        if len(shows) > 50:
+            Show.save(shows[50:])
+            shows = shows[:50]
+
+        ids = [track.uri.id for track in shows]
+
+        connection = shows[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/albums",
+            ids=",".join(ids),
+        )
+        connection.make_request("PUT", endpoint)
+
+    @staticmethod
+    def unsave(shows: list[Show]):
+        """
+        remove the given albums from saved albums of the current user. fails silently if the show is not saved
+        """
+        assert isinstance(shows, list)
+        assert len(shows) > 0
+
+        if len(shows) > 50:
+            Show.unsave(shows[50:])
+            shows = shows[:50]
+
+        ids = [track.uri.id for track in shows]
+
+        connection = shows[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/albums",
+            ids=",".join(ids),
+        )
+        connection.make_request("DELETE", endpoint)

@@ -49,7 +49,7 @@ class Client:
     def play(self, elements: list[(URI | Playable | str)] = None, context: (URI | PlayContext | str) = None, offset: int = None, position_ms: int = None, device_id: str = None):
         """
         resume playback or play specified resource
-        only one of elements and context may be specified
+        only one of albums and context may be specified
 
         :param elements: list of spotify uris or Playable types to play (None to resume playing)
         :param context: uri or PlayContext to use as context (e.g. playlist or album)
@@ -80,7 +80,7 @@ class Client:
 
         if elements is not None:
             if send_payload:
-                raise BadRequestException("only one of elements and context may be specified")
+                raise BadRequestException("only one of albums and context may be specified")
             data["uris"] = []
             for element in elements:
                 assert isinstance(element, (URI | Playable | str))
@@ -336,7 +336,7 @@ class Client:
         :param element_type: comma-separated list of return types; possible values: "album" "artist" "playlist" "track" "episode" "show"
         :param limit: number of results to return per type
         :param offset: offset of results per type
-        :return: dict with types as keys and lists as elements
+        :return: dict with types as keys and lists as albums
         """
         assert isinstance(query, str)
         assert isinstance(element_type, str)
@@ -383,9 +383,9 @@ class Client:
         :param query: string to search
         :param limit: number of results to return
         :param offset: offset of results
-        :return: list of the found episodes
+        :return: list of the found albums
         """
-        elements = (self.search(query=query, element_type="episode", offset=offset, limit=limit))["episodes"]
+        elements = (self.search(query=query, element_type="episode", offset=offset, limit=limit))["albums"]
         for element in elements:
             assert isinstance(element, Episode), "got invalid search result"
         # noinspection PyTypeChecker
@@ -460,7 +460,7 @@ class Client:
         :param offset: offset of results
         :return: list of the found users
         """
-        elements = (self.search(query=query, element_type="show", offset=offset, limit=limit))["shows"]
+        elements = (self.search(query=query, element_type="show", offset=offset, limit=limit))["albums"]
         for element in elements:
             assert isinstance(element, User), "got invalid search result"
         # noinspection PyTypeChecker
@@ -476,7 +476,7 @@ class Client:
         :return: list of the found playables
         """
         data = self.search(query=query, element_type="track,episode", offset=offset, limit=limit)
-        elements = data["tracks"] + data["episodes"]
+        elements = data["tracks"] + data["albums"]
         for element in elements:
             assert isinstance(element, Playable), "got invalid search result"
         # noinspection PyTypeChecker

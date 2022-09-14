@@ -11,6 +11,7 @@ class Track(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_track` instead.
     """
+
     def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
@@ -72,6 +73,48 @@ class Track(Playable):
         :return: [{'height': (int | None), 'width': (int | None), 'url': str}]
         """
         return self.album.images
+
+    @staticmethod
+    def save(tacks: list[Track]):
+        """
+        add the given tracks to saved tracks of the current user
+        """
+        assert isinstance(tacks, list)
+        assert len(tacks) > 0
+
+        if len(tacks) > 50:
+            Track.save(tacks[50:])
+            tacks = tacks[:50]
+
+        ids = [track.uri.id for track in tacks]
+
+        connection = tacks[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/tracks",
+            ids=",".join(ids),
+        )
+        connection.make_request("PUT", endpoint)
+
+    @staticmethod
+    def unsave(tacks: list[Track]):
+        """
+        remove the given tracks from saved tracks of the current user. fails silently if the track is not saved
+        """
+        assert isinstance(tacks, list)
+        assert len(tacks) > 0
+
+        if len(tacks) > 50:
+            Track.unsave(tacks[50:])
+            tacks = tacks[:50]
+
+        ids = [track.uri.id for track in tacks]
+
+        connection = tacks[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/tracks",
+            ids=",".join(ids),
+        )
+        connection.make_request("DELETE", endpoint)
 
 
 from .album import Album
