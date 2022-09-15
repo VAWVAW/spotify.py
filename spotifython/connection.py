@@ -187,7 +187,7 @@ class Connection:
             raise Exception("received invalid token")
 
         self._authentication.token = data["access_token"]
-        self._authentication.expires = time.time() + data["expires_in"]
+        self._authentication.token_expires = time.time() + data["expires_in"]
         self._authentication.refresh_token = data["refresh_token"]
 
         self._authentication.scope = data["scope"]
