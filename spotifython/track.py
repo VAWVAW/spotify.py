@@ -7,6 +7,7 @@ from .abc import Playable
 from .artist import Artist
 
 
+# noinspection PyProtectedMember
 class Track(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_track` instead.
@@ -52,6 +53,9 @@ class Track(Playable):
 
         for artist in data["artists"]:
             self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
+
+    def is_expired(self) -> bool:
+        return False
 
     @property
     def album(self) -> Album:

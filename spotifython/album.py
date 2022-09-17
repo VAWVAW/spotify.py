@@ -8,6 +8,7 @@ from .track import Track
 from .artist import Artist
 
 
+# noinspection PyProtectedMember
 class Album(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_album` instead.
@@ -99,6 +100,9 @@ class Album(PlayContext):
             if artist is None:
                 continue
             self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
+
+    def is_expired(self) -> bool:
+        return False
 
     @property
     def items(self) -> list[Track]:

@@ -6,6 +6,7 @@ from .cache import Cache
 from .connection import Connection
 
 
+# noinspection PyProtectedMember
 class Episode(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_episode` instead.
@@ -47,6 +48,9 @@ class Episode(Playable):
         self._name = data["name"]
         self._images = data["images"]
         self._show = self._cache.get_show(uri=URI(data["show"]["uri"]), name=data["show"]["name"])
+
+    def is_expired(self) -> bool:
+        return False
 
     @property
     def images(self) -> list[dict[str, (str, int, None)]]:

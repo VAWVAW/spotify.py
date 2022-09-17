@@ -40,6 +40,10 @@ class Cacheable(ABC):
     def make_request(uri: URI, connection: Connection) -> dict:
         pass
 
+    @abstractmethod
+    def is_expired(self) -> bool:
+        pass
+
 
 class Playable(Cacheable, ABC):
     @property

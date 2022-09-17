@@ -7,6 +7,7 @@ from .connection import Connection
 from .episode import Episode
 
 
+# noinspection PyProtectedMember
 class Show(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_show` instead.
@@ -81,6 +82,9 @@ class Show(PlayContext):
             if episode is None:
                 continue
             self._items.append(self._cache.get_episode(uri=URI(episode["uri"]), name=episode["name"]))
+
+    def is_expired(self) -> bool:
+        return False
 
     @property
     def episodes(self) -> list[Episode]:
