@@ -64,7 +64,10 @@ class Connection:
                     time.sleep(1)
                     raise Retry()
 
-        return response.json()
+        try:
+            return response.json()
+        except requests.JSONDecodeError:
+            return None
 
     def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
@@ -213,6 +216,9 @@ class Connection:
 
         response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
         data = response.json()
+
+        if "error" in data.keys():
+            raise Exception(data["error"] + ": " + data["error_description"])
 
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
