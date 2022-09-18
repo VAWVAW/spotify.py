@@ -11,6 +11,12 @@ class Cacheable(ABC):
         self._name = name
         self._cache = cache
 
+    def __str__(self):
+        return self.name
+
+    def __repr__(self):
+        return self.name
+
     @property
     def uri(self) -> URI:
         return self._uri
@@ -32,6 +38,10 @@ class Cacheable(ABC):
     @staticmethod
     @abstractmethod
     def make_request(uri: URI, connection: Connection) -> dict:
+        pass
+
+    @abstractmethod
+    def is_expired(self) -> bool:
         pass
 
 

@@ -4,37 +4,49 @@ class SpotifyException(Exception):
     """
 
 
-class BadRequestException(SpotifyException):
+class HttpError(SpotifyException):
+    """
+    base class for Http Exceptions from this library
+    """
+
+
+class BadRequestException(HttpError):
     """
     corresponds to a 400 error from the Spotify API
     """
 
 
-class InvalidTokenException(SpotifyException):
+class InvalidTokenException(HttpError):
     """
     corresponds to a 401 error from the Spotify API
     """
 
 
-class ForbiddenException(SpotifyException):
+class ForbiddenException(HttpError):
     """
     corresponds to a 403 error from the Spotify API
     """
 
 
-class NotFoundException(SpotifyException):
+class NotFoundException(HttpError):
     """
     corresponds to a 404 error from the Spotify API
     """
 
 
-class NotModified(SpotifyException):
+class PayloadToLarge(HttpError):
+    """
+    corresponds to a 413 error from the Spotify API
+    """
+
+
+class NotModified(HttpError):
     """
     corresponds to a 304 error from the Spotify API
     """
 
 
-class InternalServerError(SpotifyException):
+class InternalServerError(HttpError):
     """
     corresponds to a 500 error from the Spotify API
     """

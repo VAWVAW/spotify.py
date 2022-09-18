@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from .abc import Cacheable
 
 
@@ -11,6 +13,7 @@ class User(Cacheable):
     def __init__(self, uri: URI, cache: Cache, display_name: str = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=display_name, **kwargs)
         self._playlists = None
+        self._requested_time = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {"uri": str(self.uri)}
@@ -27,6 +30,7 @@ class User(Cacheable):
                     "items": [playlist.to_dict(minimal=True) for playlist in self._playlists]
                 }
 
+        ret["requested_time"] = self._requested_time
         return ret
 
     def load_dict(self, data: dict):
@@ -42,6 +46,7 @@ class User(Cacheable):
                 name=playlist["name"],
                 snapshot_id=playlist["snapshot_id"]
             ))
+        self._requested_time = data["requested_time"]
 
     @staticmethod
     def make_request(uri: URI, connection: Connection) -> dict:
@@ -81,8 +86,14 @@ class User(Cacheable):
                 if extra_data["next"] is None:
                     break
         base["playlists"] = data
+        base["requested_time"] = time.time()
 
         return base
+
+    def is_expired(self) -> bool:
+        if self._requested_time is None:
+            self._cache.load(uri=self._uri)
+        return time.time() > self._requested_time + 514800  # one week in unix time
 
     @property
     def display_name(self) -> str:

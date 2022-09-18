@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from .user import User
 from .abc import PlayContext
 
@@ -17,6 +19,7 @@ class SavedTracks(PlayContext):
         self._name = "Saved Tracks"
         self._items = None
         self._uri = None
+        self._requested_time = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {
@@ -33,6 +36,7 @@ class SavedTracks(PlayContext):
                     for item in self._items
                 ]
             }
+            ret["requested_time"] = self._requested_time
         return ret
 
     @staticmethod
@@ -67,6 +71,7 @@ class SavedTracks(PlayContext):
                 if extra_data["next"] is None:
                     break
         base["tracks"] = data
+        data["requested_time"] = time.time()
 
         return base
 
@@ -79,6 +84,12 @@ class SavedTracks(PlayContext):
                 "track": self._cache.get_track(uri=URI(item["track"]["uri"]), name=item["track"]["name"]),
                 "added_at": item["added_at"]
             })
+        self._requested_time = data["requested_time"]
+
+    def is_expired(self) -> bool:
+        if self._requested_time is None:
+            self._cache.load(uri=self._uri)
+        return time.time() > self._requested_time + 514800  # one week in unix time
 
     @property
     def uri(self) -> URI:
@@ -114,6 +125,7 @@ class Me(User):
         self._uri = None
         self._cache = cache
         self._playlists = None
+        self._requested_time = None
 
     # noinspection PyUnusedLocal
     @staticmethod
@@ -154,6 +166,8 @@ class Me(User):
                     break
         base["playlists"] = data
 
+        base["requested_time"] = time.time()
+
         return base
 
     def load_dict(self, data: dict):
@@ -169,10 +183,16 @@ class Me(User):
                 name=playlist["name"],
                 snapshot_id=playlist["snapshot_id"]
             ))
+        self._requested_time = data["requested_time"]
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = super().to_dict(short=short, minimal=minimal)
         return ret
+
+    def is_expired(self) -> bool:
+        if self._requested_time is None:
+            self._cache.load(uri=self._uri)
+        return time.time() > self._requested_time + 514800  # one week in unix time
 
     @property
     def uri(self) -> str:

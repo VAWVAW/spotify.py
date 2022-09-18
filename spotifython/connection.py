@@ -3,7 +3,7 @@ import base64
 import time
 import logging
 
-from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData
+from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData, PayloadToLarge, HttpError
 from .authentication import Authentication
 from .scope import Scope
 
@@ -43,6 +43,8 @@ class Connection:
                 raise ForbiddenException(response.text)
             case 404:
                 raise NotFoundException(response.text)
+            case 413:
+                raise PayloadToLarge(response.text)
             case 429:
                 # rate limit
                 log.warning("rate limit exceeded; will retry in 5 seconds")
@@ -55,8 +57,17 @@ class Connection:
                 log.warning("service unavailable; will retry in 1 second")
                 time.sleep(1)
                 raise Retry()
+            case x:
+                if x >= 300:
+                    raise HttpError((x, response.text))
+                if x < 200:
+                    time.sleep(1)
+                    raise Retry()
 
-        return response.json()
+        try:
+            return response.json()
+        except requests.JSONDecodeError:
+            return None
 
     def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
@@ -176,7 +187,7 @@ class Connection:
             raise Exception("received invalid token")
 
         self._authentication.token = data["access_token"]
-        self._authentication.expires = time.time() + data["expires_in"]
+        self._authentication.token_expires = time.time() + data["expires_in"]
         self._authentication.refresh_token = data["refresh_token"]
 
         self._authentication.scope = data["scope"]
@@ -206,13 +217,16 @@ class Connection:
         response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
         data = response.json()
 
+        if "error" in data.keys():
+            raise Exception(data["error"] + ": " + data["error_description"])
+
         if data["token_type"] != "Bearer":
             raise Exception("received invalid token")
 
         self._authentication.token = data["access_token"]
         self._authentication.token_expires = time.time() + data["expires_in"]
 
-        if not Scope.is_equal(data["scope"], self._authentication.scope):
+        if not Scope.contains(data["scope"], self._authentication.scope):
             return self._request_token()
         self._authentication.scope = data["scope"]
 

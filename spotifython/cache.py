@@ -66,6 +66,8 @@ class Cache:
 
         try:
             element.load_dict(data=data)
+            if element.is_expired():
+                raise ElementOutdated()
         except (KeyError, ElementOutdated):
             # maybe cache is outdated
             data = element.make_request(uri=uri, connection=self._connection)
@@ -131,7 +133,7 @@ class Cache:
         assert isinstance(uri, URI)
         assert uri.type == Track
 
-        if uri not in self._by_type[Track].keys():
+        if str(uri) not in self._by_type[Track].keys():
             to_add = Track(uri=uri, cache=self, name=name, **kwargs)
             self._by_type[Track][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
@@ -141,61 +143,61 @@ class Cache:
         assert isinstance(uri, URI)
         assert uri.type == Playlist
 
-        if uri not in self._by_type[Playlist].keys():
+        if str(uri) not in self._by_type[Playlist].keys():
             to_add = Playlist(uri=uri, cache=self, name=name, **kwargs)
-            self._by_type[Playlist][uri] = to_add
+            self._by_type[Playlist][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[Playlist][uri]
+        return self._by_type[Playlist][str(uri)]
 
     def get_album(self, uri: URI, name: str = None, **kwargs) -> Album:
         assert isinstance(uri, URI)
         assert uri.type == Album
 
-        if uri not in self._by_type[Album].keys():
+        if str(uri) not in self._by_type[Album].keys():
             to_add = Album(uri=uri, cache=self, name=name, **kwargs)
-            self._by_type[Album][uri] = to_add
+            self._by_type[Album][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[Album][uri]
+        return self._by_type[Album][str(uri)]
 
     def get_artist(self, uri: URI, name: str = None, **kwargs) -> Artist:
         assert isinstance(uri, URI)
         assert uri.type == Artist
 
-        if uri not in self._by_type[Artist].keys():
+        if str(uri) not in self._by_type[Artist].keys():
             to_add = Artist(uri=uri, cache=self, name=name, **kwargs)
-            self._by_type[Artist][uri] = to_add
+            self._by_type[Artist][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[Artist][uri]
+        return self._by_type[Artist][str(uri)]
 
     def get_user(self, uri: URI, display_name: str = None, **kwargs) -> User:
         assert isinstance(uri, URI)
         assert uri.type == User
 
-        if uri not in self._by_type[User].keys():
+        if str(uri) not in self._by_type[User].keys():
             to_add = User(uri=uri, cache=self, display_name=display_name, **kwargs)
-            self._by_type[User][uri] = to_add
+            self._by_type[User][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[User][uri]
+        return self._by_type[User][str(uri)]
 
     def get_episode(self, uri: URI, name: str = None, **kwargs) -> Episode:
         assert isinstance(uri, URI)
         assert uri.type == Episode
 
-        if uri not in self._by_type[Episode].keys():
+        if str(uri) not in self._by_type[Episode].keys():
             to_add = Show(uri=uri, cache=self, name=name, **kwargs)
-            self._by_type[Episode][uri] = to_add
+            self._by_type[Episode][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[Episode][uri]
+        return self._by_type[Episode][str(uri)]
 
     def get_show(self, uri: URI, name: str = None, **kwargs) -> Show:
         assert isinstance(uri, URI)
         assert uri.type == Show
 
-        if uri not in self._by_type[Show].keys():
+        if str(uri) not in self._by_type[Show].keys():
             to_add = Show(uri=uri, cache=self, name=name, **kwargs)
-            self._by_type[Show][uri] = to_add
+            self._by_type[Show][str(uri)] = to_add
             self._by_uri[str(uri)] = to_add
-        return self._by_type[Show][uri]
+        return self._by_type[Show][str(uri)]
 
 
 from .uri import URI

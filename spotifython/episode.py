@@ -6,6 +6,7 @@ from .cache import Cache
 from .connection import Connection
 
 
+# noinspection PyProtectedMember
 class Episode(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_episode` instead.
@@ -35,7 +36,7 @@ class Episode(Playable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "episodes/{id}".format(id=uri.id),
+            "albums/{id}".format(id=uri.id),
             fields="uri,name,images,show(uri,name)"
         )
         return connection.make_request("GET", endpoint)
@@ -47,6 +48,9 @@ class Episode(Playable):
         self._name = data["name"]
         self._images = data["images"]
         self._show = self._cache.get_show(uri=URI(data["show"]["uri"]), name=data["show"]["name"])
+
+    def is_expired(self) -> bool:
+        return False
 
     @property
     def images(self) -> list[dict[str, (str, int, None)]]:
@@ -64,6 +68,48 @@ class Episode(Playable):
         if self._show is None:
             self._cache.load(uri=self._uri)
         return self._show
+
+    @staticmethod
+    def save(episodes: list[Episode]):
+        """
+        add the given albums to saved albums of the current user
+        """
+        assert isinstance(episodes, list)
+        assert len(episodes) > 0
+
+        if len(episodes) > 50:
+            Episode.save(episodes[50:])
+            episodes = episodes[:50]
+
+        ids = [track.uri.id for track in episodes]
+
+        connection = episodes[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/albums",
+            ids=",".join(ids),
+        )
+        connection.make_request("PUT", endpoint)
+
+    @staticmethod
+    def unsave(episodes: list[Episode]):
+        """
+        remove the given albums from saved albums of the current user. fails silently if the episode is not saved
+        """
+        assert isinstance(episodes, list)
+        assert len(episodes) > 0
+
+        if len(episodes) > 50:
+            Episode.unsave(episodes[50:])
+            episodes = episodes[:50]
+
+        ids = [track.uri.id for track in episodes]
+
+        connection = episodes[0]._cache._connection
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/albums",
+            ids=",".join(ids),
+        )
+        connection.make_request("DELETE", endpoint)
 
 
 from .show import Show

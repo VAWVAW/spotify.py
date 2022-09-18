@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 from .connection import Connection
 from .user import User
 from .cache import Cache
@@ -12,6 +14,7 @@ class Playlist(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_playlist` instead.
     """
+
     def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None, check_outdated: bool = True, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
@@ -23,6 +26,7 @@ class Playlist(PlayContext):
         self._public = None
         self._items = None
         self._images = None
+        self._requested_time = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
@@ -39,6 +43,7 @@ class Playlist(PlayContext):
             ret["snapshot_id"] = self._snapshot_id
             ret["name"] = self._name
             ret["owner"] = self._owner.to_dict(minimal=True)
+            ret["requested_time"] = self._requested_time
 
             if not short:
                 ret["tracks"] = {
@@ -85,6 +90,8 @@ class Playlist(PlayContext):
                 if extra_data["next"] is None:
                     break
 
+        data["requested_time"] = time.time()
+
         return data
 
     def load_dict(self, data: dict):
@@ -101,6 +108,7 @@ class Playlist(PlayContext):
         self._owner = self._cache.get_user(uri=URI(data["owner"]["uri"]), display_name=data["owner"]["display_name"])
         self._images = data["images"]
         self._items = []
+        self._requested_time = data["requested_time"]
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
@@ -108,6 +116,11 @@ class Playlist(PlayContext):
                 "track": self._cache.get_element(uri=URI(track_to_add["track"]["uri"]), name=track_to_add["track"]["name"]),
                 "added_at": track_to_add["added_at"]
             })
+
+    def is_expired(self) -> bool:
+        if self._requested_time is None:
+            self._cache.load(uri=self._uri)
+        return time.time() > self._requested_time + 514800  # one week in unix time
 
     @property
     def description(self) -> str:
