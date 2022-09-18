@@ -226,7 +226,7 @@ class Connection:
         self._authentication.token = data["access_token"]
         self._authentication.token_expires = time.time() + data["expires_in"]
 
-        if not Scope.is_equal(data["scope"], self._authentication.scope):
+        if not Scope.contains(data["scope"], self._authentication.scope):
             return self._request_token()
         self._authentication.scope = data["scope"]
 

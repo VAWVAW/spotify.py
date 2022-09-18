@@ -92,3 +92,14 @@ class Scope:
         permissions2 = sorted(scope_str2.split(" "))
 
         return permissions1 == permissions2
+
+    @staticmethod
+    def contains(scope_str1: str, scope_str2: str) -> bool:
+        """
+        checks if the second scope string is contained in the first one
+        """
+        permissions1 = sorted(scope_str1.split(" "))
+        for permission in scope_str2.split(" "):
+            if permission not in permissions1:
+                return False
+        return True
