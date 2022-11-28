@@ -71,7 +71,7 @@ class SavedTracks(PlayContext):
                 if extra_data["next"] is None:
                     break
         base["tracks"] = data
-        data["requested_time"] = time.time()
+        base["requested_time"] = time.time()
 
         return base
 
