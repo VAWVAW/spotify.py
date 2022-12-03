@@ -7,13 +7,13 @@ Spotify API Wrapper
 A basic wrapper for the Spotify API.
 
 :copyright: (c) 2022-present VAWVAW
-:license: MIT, see LICENSE for more details.
+:license: GPL3, see LICENSE for more details.
 
 """
 
 __title__ = 'spotifython'
 __author__ = 'VAWVAW'
-__license__ = 'MIT'
+__license__ = 'GPL3'
 __copyright__ = 'Copyright 2022-present VAWVAW'
 
 # noinspection PyUnboundLocalVariable
@@ -39,7 +39,7 @@ from .abc import Playable, PlayContext, Cacheable
 
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
-version_info = VersionInfo(major=0, minor=2, micro=2, releaselevel='development', serial=0)
-__version__ = '0.2.2'
+version_info = VersionInfo(major=0, minor=2, micro=3, releaselevel='development', serial=0)
+__version__ = '0.2.3'
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
