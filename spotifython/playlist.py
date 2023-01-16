@@ -15,11 +15,11 @@ class Playlist(PlayContext):
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_playlist` instead.
     """
 
-    def __init__(self, uri: URI, cache: Cache, name: str = None, snapshot_id: str = None, check_outdated: bool = True, **kwargs):
+    def __init__(self, uri: URI, cache: Cache, name: str = None, check_outdated: bool = True, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
+        self._snapshot_id = None
         self._check_outdated = check_outdated
-        self._snapshot_id = snapshot_id
 
         self._description = None
         self._owner = None
@@ -98,7 +98,9 @@ class Playlist(PlayContext):
         assert isinstance(data, dict)
         assert str(self._uri) == data["uri"]
 
-        if self._check_outdated and self._snapshot_id != data["snapshot_id"] and not data["fetched"]:
+        self._requested_time = data["requested_time"]
+        if (not data["fetched"]) and (
+                self._snapshot_id is not None and self._snapshot_id != data["snapshot_id"] or self.is_expired()):
             raise ElementOutdated()
 
         self._name = data["name"]
@@ -108,7 +110,6 @@ class Playlist(PlayContext):
         self._owner = self._cache.get_user(uri=URI(data["owner"]["uri"]), display_name=data["owner"]["display_name"])
         self._images = data["images"]
         self._items = []
-        self._requested_time = data["requested_time"]
         for track_to_add in data["tracks"]["items"]:
             if track_to_add["track"] is None:
                 continue
