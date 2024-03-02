@@ -8,7 +8,7 @@ with open('requirements.txt') as f:
 
 setuptools.setup(
     name="spotifython",
-    version="0.2.4",
+    version="0.2.5",
     author="VAWVAW",
     author_email="vawvaw@vaw-valentin.de",
     description="A caching python interface to readonly parts of the spotify api.",

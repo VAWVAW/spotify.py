@@ -67,7 +67,7 @@ class Playlist(PlayContext):
         limit = 100
         endpoint = connection.add_parameters_to_endpoint(
             "playlists/{playlist_id}".format(playlist_id=uri.id),
-            fields="uri,description,name,images,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri)))",
+            fields="uri,description,name,images,owner(uri,display_name),snapshot_id,public,tracks(next,items(added_at,track(name,uri,is_local)))",
             offset=offset,
             limit=limit
         )
@@ -80,7 +80,7 @@ class Playlist(PlayContext):
                 offset += limit
                 endpoint = connection.add_parameters_to_endpoint(
                     "playlists/{playlist_id}/tracks".format(playlist_id=uri.id),
-                    fields="next,items(added_at,track(name,uri))",
+                    fields="next,items(added_at,track(name,uri,is_local))",
                     offset=offset,
                     limit=limit
                 )
@@ -111,7 +111,7 @@ class Playlist(PlayContext):
         self._images = data["images"]
         self._items = []
         for track_to_add in data["tracks"]["items"]:
-            if track_to_add["track"] is None:
+            if track_to_add["track"] is None or track_to_add["track"].get("is_local"):
                 continue
             self._items.append({
                 "track": self._cache.get_element(uri=URI(track_to_add["track"]["uri"]), name=track_to_add["track"]["name"]),
