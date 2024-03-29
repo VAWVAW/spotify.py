@@ -150,7 +150,7 @@ class Me(User):
 
         data = connection.make_request("GET", endpoint)
         # check for long data that needs paging
-        if data["next"] is not None:
+        if "next" in data and data["next"] is not None:
             while True:
                 endpoint = connection.add_parameters_to_endpoint(
                     "me/playlists",
@@ -162,7 +162,7 @@ class Me(User):
                 extra_data = connection.make_request("GET", endpoint)
                 data["items"] += extra_data["items"]
 
-                if extra_data["next"] is None:
+                if "next" in extra_data and extra_data["next"] is None:
                     break
         base["playlists"] = data
 

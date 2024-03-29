@@ -40,6 +40,6 @@ from .abc import Playable, PlayContext, Cacheable
 VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
 
 version_info = VersionInfo(major=0, minor=2, micro=4, releaselevel='development', serial=0)
-__version__ = '0.2.5'
+__version__ = '0.2.6'
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
