@@ -55,6 +55,7 @@ class SavedTracks(PlayContext):
         )
 
         data = connection.make_request("GET", endpoint)
+        offset += limit
         # check for long data that needs paging
         if data["next"] is not None:
             while True:
