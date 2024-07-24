@@ -116,6 +116,8 @@ class Cache:
 
         try:
             element.load_dict(data)
+            if element.is_expired():
+                raise ElementOutdated()
         except (KeyError, ElementOutdated):
             # maybe cache is outdated
             data = element.make_request(uri=None, connection=self._connection)
