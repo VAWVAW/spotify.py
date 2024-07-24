@@ -354,8 +354,7 @@ class Client:
             element_type += "s"
             ret[element_type] = []
             for element in data[element_type]["items"]:
-                ret[element_type].append(self._cache.get_element(uri=URI(element["uri"])))
-                ret[element_type][-1].load_dict(data=element)
+                ret[element_type].append(self._cache.get_element(uri=URI(element["uri"]), name=element["name"]))
         return ret
 
     def search_track(self, query: str, limit: int = 5, offset: int = 0) -> list[Track]:
