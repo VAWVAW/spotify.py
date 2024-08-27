@@ -18,7 +18,7 @@ class Playlist(PlayContext):
     def __init__(self, uri: URI, cache: Cache, name: str = None, check_outdated: bool = True, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
-        self._snapshot_id = None
+        self._snapshot_id = kwargs.get("snapshot_id")
         self._check_outdated = check_outdated
 
         self._description = None
