@@ -93,7 +93,7 @@ class User(Cacheable):
     def is_expired(self) -> bool:
         if self._requested_time is None:
             self._cache.load(uri=self._uri)
-        return time.time() > self._requested_time + 514800  # one week in unix time
+        return time.time() > self._requested_time + (3600 * 24 * 7)  # one week in unix time
 
     @property
     def display_name(self) -> str:

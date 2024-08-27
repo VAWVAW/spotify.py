@@ -231,7 +231,9 @@ class Me(User):
         return ret
 
     def is_expired(self) -> bool:
-        return True
+        if self._requested_time is None:
+            self._cache.load(uri=self._uri)
+        return time.time() > self._requested_time + (3600 * 24)  # one day in unix time
 
     @property
     def uri(self) -> str:
