@@ -222,6 +222,16 @@ class Client:
         return self._cache.get_me().playlists
 
     @property
+    def saved_albums(self) -> list[Album]:
+        """
+        get saved albums of current user
+
+        :return: list of albums saved in the user profile
+        """
+
+        return self._cache.get_me().albums
+
+    @property
     def saved_tracks(self) -> SavedTracks:
         """
         get tracks of current user

@@ -126,6 +126,7 @@ class Me(User):
         self._uri = None
         self._cache = cache
         self._playlists = None
+        self._albums = None
         self._requested_time = None
 
     # noinspection PyUnusedLocal
@@ -138,6 +139,34 @@ class Me(User):
             fields="display_name,uri"
         )
         base = connection.make_request("GET", endpoint)
+
+        # get saved albums
+        offset = 0
+        limit = 50
+        endpoint = connection.add_parameters_to_endpoint(
+            "me/albums",
+            offset=offset,
+            limit=limit,
+            fields="items(album(uri,name))"
+        )
+
+        data = connection.make_request("GET", endpoint)
+        # check for long data that needs paging
+        if "next" in data and data["next"] is not None:
+            while True:
+                endpoint = connection.add_parameters_to_endpoint(
+                    "me/albums",
+                    offset=offset,
+                    limit=limit,
+                    fields="items(album(uri,name))"
+                )
+                offset += limit
+                extra_data = connection.make_request("GET", endpoint)
+                data["items"] += extra_data["items"]
+
+                if "next" in extra_data and extra_data["next"] is None:
+                    break
+        base["albums"] = data
 
         # get saved playlists
         offset = 0
@@ -177,6 +206,12 @@ class Me(User):
         self._uri = URI(data["uri"])
         self._name = data["display_name"]
 
+        self._albums = []
+        for album in data["albums"]["items"]:
+            self._albums.append(self._cache.get_album(
+                uri=URI(album["album"]["uri"]),
+                name=album["album"]["name"],
+            ))
         self._playlists = []
         for playlist in data["playlists"]["items"]:
             self._playlists.append(self._cache.get_playlist(
@@ -188,6 +223,11 @@ class Me(User):
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = super().to_dict(short=short, minimal=minimal)
+
+        if not short and not minimal:
+            ret["albums"] = {
+                "items": [{"album": album.to_dict(minimal=True)} for album in self._albums]
+            }
         return ret
 
     def is_expired(self) -> bool:
@@ -212,6 +252,12 @@ class Me(User):
         return self._playlists.copy()
 
     @property
+    def albums(self) -> list[Album]:
+        if self._albums is None:
+            self._cache.load_builtin(self, "me")
+        return self._albums.copy()
+
+    @property
     def name(self) -> str:
         if self._name is None:
             self._cache.load_builtin(self, "me")
@@ -227,3 +273,4 @@ from .uri import URI
 from .connection import Connection
 from .track import Track
 from .playlist import Playlist
+from .album import Album
