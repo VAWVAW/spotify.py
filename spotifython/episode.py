@@ -36,7 +36,7 @@ class Episode(Playable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "albums/{id}".format(id=uri.id),
+            "episodes/{id}".format(id=uri.id),
             fields="uri,name,images,show(uri,name)"
         )
         return connection.make_request("GET", endpoint)
