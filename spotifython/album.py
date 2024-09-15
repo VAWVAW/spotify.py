@@ -1,50 +1,49 @@
 from __future__ import annotations
+from collections.abc import Sequence
 
 from .abc import PlayContext
 from .uri import URI
 from .cache import Cache
 from .connection import Connection
+from .errors import SpotifyException
 from .track import Track
+from .episode import Episode
 from .artist import Artist
 
 
-# noinspection PyProtectedMember
 class Album(PlayContext):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_album` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+
+    def __init__(self, uri: URI, cache: Cache, name: str | None = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
-        self._artists = None
-        self._items = None
-        self._images = None
+        self._artists: list[Artist] | None = None
+        self._items: list[Track] | None = None
+        self._images: list[dict[str, str | int | None]] | None = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
-        if self._name is not None: ret["name"] = self._name
+        if self._name is not None:
+            ret["name"] = self._name
 
         if not minimal:
             if self._items is None:
                 self._cache.load(self.uri)
 
-            ret["images"] = self._images
-            ret["name"] = self._name
-            ret["artists"] = [
-                {
-                    "uri": str(artist.uri),
-                    "name": artist.name
-                }
-                for artist in self._artists
-            ]
+            if self._images is not None:
+                ret["images"] = self._images
+            if self._artists is not None:
+                ret["artists"] = [
+                    {"uri": str(artist.uri), "name": artist.name}
+                    for artist in self._artists
+                ]
 
-            if not short:
+            if not short and self._items is not None:
                 ret["tracks"] = {
                     "items": [
-                        {
-                            "uri": str(item.uri),
-                            "name": item.name
-                        }
+                        {"uri": str(item.uri), "name": item.name}
                         for item in self._items
                     ]
                 }
@@ -59,23 +58,25 @@ class Album(PlayContext):
         offset = 0
         limit = 50
         endpoint = connection.add_parameters_to_endpoint(
-            "albums/{id}".format(id=uri.id),
-            offset=offset,
-            limit=limit
+            "albums/{id}".format(id=uri.id), offset=offset, limit=limit
         )
 
-        data = connection.make_request("GET", endpoint)
+        if (response := connection.make_request("GET", endpoint)) is not None:
+            data = response
+        else:
+            raise SpotifyException("api request got no data")
 
         # check for long data that needs paging
         if data["tracks"]["next"] is not None:
             while True:
                 offset += limit
                 endpoint = connection.add_parameters_to_endpoint(
-                    "albums/{id}/tracks".format(id=uri.id),
-                    offset=offset,
-                    limit=limit
+                    "albums/{id}/tracks".format(id=uri.id), offset=offset, limit=limit
                 )
-                extra_data = connection.make_request("GET", endpoint)
+                if (response := connection.make_request("GET", endpoint)) is not None:
+                    extra_data = response
+                else:
+                    raise SpotifyException("api request got no data")
                 data["tracks"]["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -94,36 +95,46 @@ class Album(PlayContext):
         for track in data["tracks"]["items"]:
             if track is None:
                 continue
-            self._items.append(self._cache.get_track(uri=URI(track["uri"]), name=track["name"]))
+            self._items.append(
+                self._cache.get_track(uri=URI(track["uri"]), name=track["name"])
+            )
 
         for artist in data["artists"]:
             if artist is None:
                 continue
-            self._artists.append(self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"]))
+            self._artists.append(
+                self._cache.get_artist(uri=URI(artist["uri"]), name=artist["name"])
+            )
 
     def is_expired(self) -> bool:
         return False
 
     @property
-    def items(self) -> list[Track]:
+    def items(self) -> Sequence[Track | Episode]:
         if self._items is None:
             self._cache.load(uri=self._uri)
-        return self._items.copy()
+        if self._items is not None:
+            return self._items.copy()
+        raise Exception("unreachable")
 
     @property
     def tracks(self) -> list[Track]:
         if self._items is None:
             self._cache.load(uri=self._uri)
-        return self._items.copy()
+        if self._items is not None:
+            return self._items.copy()
+        raise Exception("unreachable")
 
     @property
     def artists(self) -> list[Artist]:
         if self._artists is None:
             self._cache.load(uri=self._uri)
-        return self._artists.copy()
+        if self._artists is not None:
+            return self._artists.copy()
+        raise Exception("unreachable")
 
     @property
-    def images(self) -> list[dict[str, (str, int, None)]]:
+    def images(self) -> list[dict[str, str | int | None]]:
         """
         get list of the image registered with spotify in different sizes
 
@@ -131,7 +142,9 @@ class Album(PlayContext):
         """
         if self._images is None:
             self._cache.load(uri=self._uri)
-        return self._images.copy()
+        if self._images is not None:
+            return self._images.copy()
+        raise Exception("unreachable")
 
     @staticmethod
     def save(albums: list[Album]):

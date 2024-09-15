@@ -12,7 +12,16 @@ class Authentication:
     :param token_expires: timestamp when the token expires
     """
 
-    def __init__(self, client_id: str = None, client_secret: str = None, scope: (Scope | str) = None, show_dialog: bool = False, refresh_token: str = None, token: str = None, token_expires: float = 0.0):
+    def __init__(
+        self,
+        client_id: str,
+        client_secret: str,
+        scope: Scope | str | None = None,
+        show_dialog: bool = False,
+        refresh_token: str | None = None,
+        token: str | None = None,
+        token_expires: float = 0.0,
+    ):
         assert isinstance(client_id, str)
         assert isinstance(client_secret, str)
         assert isinstance(scope, (Scope | str | None))
@@ -42,7 +51,7 @@ class Authentication:
             "show_dialog": self.show_dialog,
             "refresh_token": self.refresh_token,
             "token": self.token,
-            "token_expires": self.token_expires
+            "token_expires": self.token_expires,
         }
 
     @classmethod
@@ -58,5 +67,5 @@ class Authentication:
             show_dialog=data["show_dialog"],
             refresh_token=data["refresh_token"],
             token=data["token"],
-            token_expires=data["token_expires"]
+            token_expires=data["token_expires"],
         )

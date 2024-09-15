@@ -2,6 +2,7 @@ from __future__ import annotations
 
 import time
 
+from .errors import SpotifyException
 from .abc import Cacheable
 
 
@@ -10,27 +11,34 @@ class User(Cacheable):
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_user` instead.
     """
 
-    def __init__(self, uri: URI, cache: Cache, display_name: str = None, **kwargs):
+    def __init__(
+        self, uri: URI, cache: Cache, display_name: str | None = None, **kwargs
+    ):
         super().__init__(uri=uri, cache=cache, name=display_name, **kwargs)
-        self._playlists = None
-        self._requested_time = None
+        self._playlists: list[Playlist] | None = None
+        self._requested_time: float | None = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
         ret = {"uri": str(self.uri)}
-        if self._name is not None: ret["display_name"] = self._name
+        if self._name is not None:
+            ret["display_name"] = self._name
 
         if not minimal:
             if self._playlists is None:
                 self._cache.load(self.uri)
 
-            ret["display_name"] = self._name
+            if self._name is not None:
+                ret["display_name"] = self._name
 
-            if not short:
+            if not short and self._playlists is not None:
                 ret["playlists"] = {
-                    "items": [playlist.to_dict(minimal=True) for playlist in self._playlists]
+                    "items": [
+                        playlist.to_dict(minimal=True) for playlist in self._playlists
+                    ]
                 }
 
-        ret["requested_time"] = self._requested_time
+        if self._requested_time is not None:
+            ret["requested_time"] = self._requested_time
         return ret
 
     def load_dict(self, data: dict):
@@ -41,11 +49,13 @@ class User(Cacheable):
 
         self._playlists = []
         for playlist in data["playlists"]["items"]:
-            self._playlists.append(self._cache.get_playlist(
-                uri=URI(playlist["uri"]),
-                name=playlist["name"],
-                snapshot_id=playlist["snapshot_id"]
-            ))
+            self._playlists.append(
+                self._cache.get_playlist(
+                    uri=URI(playlist["uri"]),
+                    name=playlist["name"],
+                    snapshot_id=playlist["snapshot_id"],
+                )
+            )
         self._requested_time = data["requested_time"]
 
     @staticmethod
@@ -54,10 +64,12 @@ class User(Cacheable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "users/{user_id}".format(user_id=uri.id),
-            fields="display_name,uri"
+            "users/{user_id}".format(user_id=uri.id), fields="display_name,uri"
         )
-        base = connection.make_request("GET", endpoint)
+        if (response := connection.make_request("GET", endpoint)) is not None:
+            base = response
+        else:
+            raise SpotifyException("api request got no data")
 
         # get playlists
         offset = 0
@@ -66,10 +78,14 @@ class User(Cacheable):
             "users/{userid}/playlists".format(userid=uri.id),
             offset=offset,
             limit=limit,
-            fields="items(uri,name,snapshot_id)"
+            fields="items(uri,name,snapshot_id)",
         )
 
-        data = connection.make_request("GET", endpoint)
+        if (response := connection.make_request("GET", endpoint)) is not None:
+            data = response
+        else:
+            raise SpotifyException("api request got no data")
+
         # check for long data that needs paging
         if data["next"] is not None:
             while True:
@@ -77,10 +93,13 @@ class User(Cacheable):
                     "users/{userid}/playlists".format(userid=uri.id),
                     offset=offset,
                     limit=limit,
-                    fields="items(uri,name,snapshot_id)"
+                    fields="items(uri,name,snapshot_id)",
                 )
                 offset += limit
-                extra_data = connection.make_request("GET", endpoint)
+                if (response := connection.make_request("GET", endpoint)) is not None:
+                    extra_data = response
+                else:
+                    raise SpotifyException("api request got no data")
                 data["items"] += extra_data["items"]
 
                 if extra_data["next"] is None:
@@ -93,7 +112,11 @@ class User(Cacheable):
     def is_expired(self) -> bool:
         if self._requested_time is None:
             self._cache.load(uri=self._uri)
-        return time.time() > self._requested_time + (3600 * 24 * 7)  # one week in unix time
+        if self._requested_time is not None:
+            return time.time() > self._requested_time + (
+                3600 * 24 * 7
+            )  # one week in unix time
+        raise Exception("unreachable")
 
     @property
     def display_name(self) -> str:
@@ -103,13 +126,17 @@ class User(Cacheable):
 
         if self._name is None:
             self._cache.load(self.uri)
-        return self._name
+        if self._name is not None:
+            return self._name
+        raise Exception("unreachable")
 
     @property
     def playlists(self) -> list[Playlist]:
         if self._playlists is None:
             self._cache.load(self.uri)
-        return self._playlists.copy()
+        if self._playlists is not None:
+            return self._playlists.copy()
+        raise Exception("unreachable")
 
 
 from .playlist import Playlist

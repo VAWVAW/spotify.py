@@ -2,26 +2,27 @@ class Scope:
     """
     A class to organise the scopes for the spotify api. Take a look at the `api documentation <https://developer.spotify.com/documentation/web-api/reference/>`_ for more information.
     """
+
     def __init__(
-            self,
-            user_read_playback_position: bool = False,
-            user_read_email: bool = False,
-            playlist_modify_private: bool = False,
-            playlist_read_private: bool = False,
-            user_library_modify: bool = False,
-            playlist_read_collaborative: bool = False,
-            user_follow_read: bool = False,
-            user_read_playback_state: bool = False,
-            user_read_currently_playing: bool = False,
-            user_read_private: bool = False,
-            playlist_modify_public: bool = False,
-            playlist_read_public: bool = False,
-            user_library_read: bool = False,
-            user_top_read: bool = False,
-            ugc_image_upload: bool = False,
-            user_follow_modify: bool = False,
-            user_modify_playback_state: bool = False,
-            user_read_recently_played: bool = False
+        self,
+        user_read_playback_position: bool = False,
+        user_read_email: bool = False,
+        playlist_modify_private: bool = False,
+        playlist_read_private: bool = False,
+        user_library_modify: bool = False,
+        playlist_read_collaborative: bool = False,
+        user_follow_read: bool = False,
+        user_read_playback_state: bool = False,
+        user_read_currently_playing: bool = False,
+        user_read_private: bool = False,
+        playlist_modify_public: bool = False,
+        playlist_read_public: bool = False,
+        user_library_read: bool = False,
+        user_top_read: bool = False,
+        ugc_image_upload: bool = False,
+        user_follow_modify: bool = False,
+        user_modify_playback_state: bool = False,
+        user_read_recently_played: bool = False,
     ):
         self.user_read_playback_position = user_read_playback_position
         self.user_read_email = user_read_email

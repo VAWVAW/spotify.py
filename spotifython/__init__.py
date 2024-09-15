@@ -11,13 +11,12 @@ A basic wrapper for the Spotify API.
 
 """
 
-__title__ = 'spotifython'
-__author__ = 'VAWVAW'
-__license__ = 'GPL3'
-__copyright__ = 'Copyright 2022-present VAWVAW'
+__title__ = "spotifython"
+__author__ = "VAWVAW"
+__license__ = "GPL3"
+__copyright__ = "Copyright 2022-present VAWVAW"
 
-# noinspection PyUnboundLocalVariable
-__path__ = __import__('pkgutil').extend_path(__path__, __name__)
+__path__ = __import__("pkgutil").extend_path(__path__, __name__)
 
 from collections import namedtuple
 import logging
@@ -25,7 +24,18 @@ import logging
 from .client import Client
 from .authentication import Authentication
 from .user import User
-from .errors import SpotifyException, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, NotModified, InternalServerError, InvalidTokenData, PayloadToLarge, HttpError
+from .errors import (
+    SpotifyException,
+    BadRequestException,
+    InvalidTokenException,
+    ForbiddenException,
+    NotFoundException,
+    NotModified,
+    InternalServerError,
+    InvalidTokenData,
+    PayloadToLarge,
+    HttpError,
+)
 from .scope import Scope
 from .playlist import Playlist
 from .track import Track
@@ -37,9 +47,11 @@ from .show import Show
 from .me import Me, SavedTracks
 from .abc import Playable, PlayContext, Cacheable
 
-VersionInfo = namedtuple('VersionInfo', 'major minor micro releaselevel serial')
+VersionInfo = namedtuple("VersionInfo", "major minor micro releaselevel serial")
 
-version_info = VersionInfo(major=0, minor=2, micro=7, releaselevel='development', serial=0)
-__version__ = '0.2.9'
+version_info = VersionInfo(
+    major=0, minor=2, micro=7, releaselevel="development", serial=0
+)
+__version__ = "0.2.9"
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())

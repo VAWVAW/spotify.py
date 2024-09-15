@@ -3,7 +3,18 @@ import base64
 import time
 import logging
 
-from .errors import NotModified, BadRequestException, InvalidTokenException, ForbiddenException, NotFoundException, Retry, InternalServerError, InvalidTokenData, PayloadToLarge, HttpError
+from .errors import (
+    NotModified,
+    BadRequestException,
+    InvalidTokenException,
+    ForbiddenException,
+    NotFoundException,
+    Retry,
+    InternalServerError,
+    InvalidTokenData,
+    PayloadToLarge,
+    HttpError,
+)
 from .authentication import Authentication
 from .scope import Scope
 
@@ -18,8 +29,7 @@ class Connection:
         return {
             "Accept": "application/json",
             "Content-Type": "application/json",
-            "Authorization":
-                "Bearer " + self._authentication.token
+            "Authorization": "Bearer " + self._authentication.token,
         }
 
     def _evaluate_response(self, response: requests.Response) -> dict | None:
@@ -69,15 +79,20 @@ class Connection:
         except requests.JSONDecodeError:
             return None
 
-    def make_request(self, method: str, endpoint: str, data: str = None) -> dict | None:
+    def make_request(
+        self, method: str, endpoint: str, request_data: str | None = None
+    ) -> dict | None:
         url = "https://api.spotify.com/v1/" + endpoint
         if self._authentication.token is None:
             self._get_token()
-        if data is not None:
-            log.debug("%s %s with %s", method, url, data)
+        if request_data is not None:
+            log.debug("%s %s with %s", method, url, request_data)
+
         retries = 5
         while retries > 0:
-            response = requests.request(method, url, data=data, headers=self._get_header())
+            response = requests.request(
+                method, url, data=request_data, headers=self._get_header()
+            )
             try:
                 data = self._evaluate_response(response)
             except Retry:
@@ -87,6 +102,7 @@ class Connection:
                 break
         else:
             log.error("request ran out of retries")
+            data = None
         return data
 
     @staticmethod
@@ -108,10 +124,17 @@ class Connection:
         """
         :return: {'token_type': 'Bearer', 'scope': scope_str, 'refresh_token': refresh_token}
         """
-        if self._authentication.client_id is None or self._authentication.client_secret is None:
-            raise InvalidTokenData("client_id and client_secret are needed to request access and refresh token")
-        if self._authentication.scope == 'None':
-            raise InvalidTokenData("a scope is needed to request access and refresh token")
+        if (
+            self._authentication.client_id is None
+            or self._authentication.client_secret is None
+        ):
+            raise InvalidTokenData(
+                "client_id and client_secret are needed to request access and refresh token"
+            )
+        if self._authentication.scope == "None":
+            raise InvalidTokenData(
+                "a scope is needed to request access and refresh token"
+            )
 
         import random
         import string
@@ -119,7 +142,9 @@ class Connection:
         import socket
 
         # generate random string to secure against request forgery
-        state = ''.join(random.choice(string.ascii_letters + string.digits) for _ in range(16))
+        state = "".join(
+            random.choice(string.ascii_letters + string.digits) for _ in range(16)
+        )
         # redirect uri that needs to be set in the application settings
         redirect_uri = "http://localhost:2342/"
 
@@ -131,7 +156,7 @@ class Connection:
             scope=str(self._authentication.scope),
             state=state,
             show_dialog=self._authentication.show_dialog,
-            redirect_uri=redirect_uri
+            redirect_uri=redirect_uri,
         )
         # open the url in the (hopefully) default browser
         webbrowser.open(endpoint)
@@ -145,6 +170,7 @@ class Connection:
 
         # wait for connection
         (clientsocket, addr) = serversocket.accept()
+        del addr
         data = str(clientsocket.recv(1024), "utf8")
         clientsocket.send(bytes("You can close this page now.", "utf8"))
         clientsocket.close()
@@ -173,14 +199,23 @@ class Connection:
             "redirect_uri": redirect_uri,
         }
 
-        encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(
+            bytes(
+                self._authentication.client_id
+                + ":"
+                + self._authentication.client_secret,
+                "utf8",
+            )
+        ).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + encoded
+            "Authorization": "Basic " + encoded,
         }
 
-        response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
+        response = requests.post(
+            "https://accounts.spotify.com/api/token", data=form, headers=header
+        )
         data = response.json()
 
         if data["token_type"] != "Bearer":
@@ -197,24 +232,38 @@ class Connection:
         make request to spotify to get a new Bearer from the refresh token
         :return: {'scope': scope_str}
         """
-        if self._authentication.client_id is None or self._authentication.client_secret is None:
-            raise InvalidTokenData("client_id and client_secret are needed to refresh the access token")
-        if self._authentication.scope == 'None':
+        if (
+            self._authentication.client_id is None
+            or self._authentication.client_secret is None
+        ):
+            raise InvalidTokenData(
+                "client_id and client_secret are needed to refresh the access token"
+            )
+        if self._authentication.scope == "None":
             raise InvalidTokenData("a scope is needed to refresh the access token")
 
         form = {
             "grant_type": "refresh_token",
-            "refresh_token": self._authentication.refresh_token
+            "refresh_token": self._authentication.refresh_token,
         }
 
-        encoded = base64.b64encode(bytes(self._authentication.client_id + ":" + self._authentication.client_secret, "utf8")).decode("utf8")
+        encoded = base64.b64encode(
+            bytes(
+                self._authentication.client_id
+                + ":"
+                + self._authentication.client_secret,
+                "utf8",
+            )
+        ).decode("utf8")
 
         header = {
             "Content-Type": "application/x-www-form-urlencoded",
-            "Authorization": "Basic " + encoded
+            "Authorization": "Basic " + encoded,
         }
 
-        response = requests.post("https://accounts.spotify.com/api/token", data=form, headers=header)
+        response = requests.post(
+            "https://accounts.spotify.com/api/token", data=form, headers=header
+        )
         data = response.json()
 
         if "error" in data.keys():
@@ -246,7 +295,7 @@ class Connection:
             "refresh_token": self._authentication.refresh_token,
             "show_dialog": self._authentication.show_dialog,
             "token": self._authentication.token,
-            "expires": self._authentication.token_expires
+            "expires": self._authentication.token_expires,
         }
 
     @property

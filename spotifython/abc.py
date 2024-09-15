@@ -1,15 +1,18 @@
 from __future__ import annotations
 from abc import ABC, abstractmethod
+from collections.abc import Sequence
 
 
 class Cacheable(ABC):
-    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+    def __init__(self, uri: URI, cache: Cache, name: str | None = None, **kwargs):
+        del kwargs
+
         assert isinstance(uri, URI)
         assert isinstance(cache, Cache)
         assert isinstance(name, (str | None))
-        self._uri = uri
-        self._name = name
-        self._cache = cache
+        self._uri: URI = uri
+        self._name: str | None = name
+        self._cache: Cache = cache
 
     def __str__(self):
         return self.name
@@ -25,7 +28,9 @@ class Cacheable(ABC):
     def name(self) -> str:
         if self._name is None:
             self._cache.load(self._uri)
-        return self._name
+        if self._name is not None:
+            return self._name
+        raise Exception("unreachable")
 
     @abstractmethod
     def load_dict(self, data: dict):
@@ -48,7 +53,7 @@ class Cacheable(ABC):
 class Playable(Cacheable, ABC):
     @property
     @abstractmethod
-    def images(self) -> list[dict[str, (int, str, None)]]:
+    def images(self) -> list[dict[str, int | str | None]]:
         """
         get list of the image registered with spotify in different sizes
 
@@ -60,7 +65,7 @@ class Playable(Cacheable, ABC):
 class PlayContext(Cacheable, ABC):
     @property
     @abstractmethod
-    def images(self) -> list[dict[str, (int, str, None)]]:
+    def images(self) -> list[dict[str, int | str | None]]:
         """
         get list of the image registered with spotify in different sizes
 
@@ -70,7 +75,7 @@ class PlayContext(Cacheable, ABC):
 
     @property
     @abstractmethod
-    def items(self) -> list[(Playable | Track | Episode)]:
+    def items(self) -> Sequence[Track | Episode]:
         pass
 
 

@@ -19,7 +19,6 @@ sys.path.insert(0, os.path.abspath('..'))
 # -- Project information -----------------------------------------------------
 
 project = 'spotifython'
-# noinspection PyShadowingBuiltins
 copyright = '2022-present, VAWVAW'
 author = 'VAWVAW'
 
@@ -42,7 +41,6 @@ master_doc = "index"
 
 version = ''
 with open('../spotifython/__init__.py') as f:
-    # noinspection PyRedeclaration
     version = re.search(r'^__version__\s*=\s*[\'"]([^\'"]*)[\'"]', f.read(), re.MULTILINE).group(1)
 
 release = version

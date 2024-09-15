@@ -1,33 +1,40 @@
 from __future__ import annotations
 
+from .errors import SpotifyException
 from .abc import Playable
 from .uri import URI
 from .cache import Cache
 from .connection import Connection
 
 
-# noinspection PyProtectedMember
 class Episode(Playable):
     """
     Do not create an object of this class yourself. Use :meth:`spotifython.Client.get_episode` instead.
     """
-    def __init__(self, uri: URI, cache: Cache, name: str = None, **kwargs):
+
+    def __init__(self, uri: URI, cache: Cache, name: str | None = None, **kwargs):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
 
-        self._images = None
-        self._show = None
+        self._images: list[dict[str, str | int | None]] | None = None
+        self._show: Show | None = None
 
     def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+        del short
+
         ret = {"uri": str(self._uri)}
-        if self._name is not None: ret["name"] = self._name
+        if self._name is not None:
+            ret["name"] = self._name
 
         if not minimal:
             if self._show is None:
                 self._cache.load(self.uri)
 
-            ret["name"] = self._name
-            ret["images"] = self._images
-            ret["show"] = self._show.to_dict(minimal=True)
+            if self._name is not None:
+                ret["name"] = self._name
+            if self._images is not None:
+                ret["images"] = self._images
+            if self._show is not None:
+                ret["show"] = self._show.to_dict(minimal=True)
         return ret
 
     @staticmethod
@@ -36,10 +43,12 @@ class Episode(Playable):
         assert isinstance(connection, Connection)
 
         endpoint = connection.add_parameters_to_endpoint(
-            "episodes/{id}".format(id=uri.id),
-            fields="uri,name,images,show(uri,name)"
+            "episodes/{id}".format(id=uri.id), fields="uri,name,images,show(uri,name)"
         )
-        return connection.make_request("GET", endpoint)
+        response = connection.make_request("GET", endpoint)
+        if response is not None:
+            return response
+        raise SpotifyException("api request got no data")
 
     def load_dict(self, data: dict):
         assert isinstance(data, dict)
@@ -47,13 +56,15 @@ class Episode(Playable):
 
         self._name = data["name"]
         self._images = data["images"]
-        self._show = self._cache.get_show(uri=URI(data["show"]["uri"]), name=data["show"]["name"])
+        self._show = self._cache.get_show(
+            uri=URI(data["show"]["uri"]), name=data["show"]["name"]
+        )
 
     def is_expired(self) -> bool:
         return False
 
     @property
-    def images(self) -> list[dict[str, (str, int, None)]]:
+    def images(self) -> list[dict[str, str | int | None]]:
         """
         get list of the image registered with spotify in different sizes
 
@@ -61,13 +72,17 @@ class Episode(Playable):
         """
         if self._images is None:
             self._cache.load(uri=self._uri)
-        return self._images.copy()
+        if self._images is not None:
+            return self._images.copy()
+        raise Exception("unreachable")
 
     @property
     def show(self) -> Show:
         if self._show is None:
             self._cache.load(uri=self._uri)
-        return self._show
+        if self._show is not None:
+            return self._show
+        raise Exception("unreachable")
 
     @staticmethod
     def save(episodes: list[Episode]):

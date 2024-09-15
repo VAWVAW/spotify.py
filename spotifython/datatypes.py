@@ -13,6 +13,5 @@ datatypes = {
     "album": Album,
     "artist": Artist,
     "show": Show,
-    "user": User
+    "user": User,
 }
-

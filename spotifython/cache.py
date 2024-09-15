@@ -1,10 +1,10 @@
 # resolve circular dependencies
 from __future__ import annotations
 
+from abc import ABCMeta
 import json
 import os.path
 import logging
-from typing import Type
 
 from .connection import Connection
 from .errors import ElementOutdated
@@ -13,13 +13,21 @@ log = logging.getLogger(__name__)
 
 
 class Cache:
-    def __init__(self, connection: Connection, cache_dir: str = None):
-        self._cache_dir = cache_dir
-        self._connection = connection
-        self._by_uri = {}
-        self._me = None
-        self._saved_tracks = None
-        self._by_type = {
+    def __init__(self, connection: Connection, cache_dir: str | None = None):
+        self._cache_dir: str | None = cache_dir
+        self._connection: Connection = connection
+        self._by_uri: dict[
+            str, Playlist | User | Episode | Track | Album | Artist | Show | SavedTracks
+        ] = {}
+        self._me: Me | None = None
+        self._saved_tracks: SavedTracks | None = None
+        self._by_type: dict[
+            ABCMeta,
+            dict[
+                str,
+                Playlist | User | Episode | Track | Album | Artist | Show | SavedTracks,
+            ],
+        ] = {
             Playlist: {},
             Episode: {},
             Track: {},
@@ -27,14 +35,16 @@ class Cache:
             Artist: {},
             Show: {},
             SavedTracks: {},
-            User: {}
+            User: {},
         }
 
     @property
-    def cache_dir(self) -> str:
+    def cache_dir(self) -> str | None:
         return self._cache_dir
 
-    def get_element(self, uri: URI, name: str = None, **kwargs) -> Type[Playlist | User | Episode | Track | Album | Artist | Show]:
+    def get_element(
+        self, uri: URI, name: str | None = None, **kwargs
+    ) -> Playlist | User | Episode | Track | Album | Artist | Show | SavedTracks:
         if str(uri) not in self._by_uri.keys():
             # generate element based on type in uri
             to_add = uri.type(uri=uri, cache=self, name=name, **kwargs)
@@ -43,7 +53,6 @@ class Cache:
 
         return self._by_uri[str(uri)]
 
-    # noinspection PyArgumentList
     def load(self, uri: URI):
         assert isinstance(uri, URI)
 
@@ -97,8 +106,7 @@ class Cache:
             self._by_type[SavedTracks][str(to_add.uri)] = to_add
         return self._saved_tracks
 
-    # noinspection PyTypeChecker
-    def load_builtin(self, element: Cacheable, name: str):
+    def load_builtin(self, element: Me | SavedTracks, name: str):
         # try to load from cache
         if self._cache_dir is not None:
             path = os.path.join(self._cache_dir, name)
@@ -131,7 +139,7 @@ class Cache:
                 json.dump(element.to_dict(), out_file)
 
     # get cached objects and create them if needed
-    def get_track(self, uri: URI, name: str = None, **kwargs) -> Track:
+    def get_track(self, uri: URI, name: str | None = None, **kwargs) -> Track:
         assert isinstance(uri, URI)
         assert uri.type == Track
 
@@ -141,7 +149,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[Track][str(uri)]
 
-    def get_playlist(self, uri: URI, name: str = None, **kwargs) -> Playlist:
+    def get_playlist(self, uri: URI, name: str | None = None, **kwargs) -> Playlist:
         assert isinstance(uri, URI)
         assert uri.type == Playlist
 
@@ -151,7 +159,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[Playlist][str(uri)]
 
-    def get_album(self, uri: URI, name: str = None, **kwargs) -> Album:
+    def get_album(self, uri: URI, name: str | None = None, **kwargs) -> Album:
         assert isinstance(uri, URI)
         assert uri.type == Album
 
@@ -161,7 +169,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[Album][str(uri)]
 
-    def get_artist(self, uri: URI, name: str = None, **kwargs) -> Artist:
+    def get_artist(self, uri: URI, name: str | None = None, **kwargs) -> Artist:
         assert isinstance(uri, URI)
         assert uri.type == Artist
 
@@ -171,7 +179,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[Artist][str(uri)]
 
-    def get_user(self, uri: URI, display_name: str = None, **kwargs) -> User:
+    def get_user(self, uri: URI, display_name: str | None = None, **kwargs) -> User:
         assert isinstance(uri, URI)
         assert uri.type == User
 
@@ -181,7 +189,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[User][str(uri)]
 
-    def get_episode(self, uri: URI, name: str = None, **kwargs) -> Episode:
+    def get_episode(self, uri: URI, name: str | None = None, **kwargs) -> Episode:
         assert isinstance(uri, URI)
         assert uri.type == Episode
 
@@ -191,7 +199,7 @@ class Cache:
             self._by_uri[str(uri)] = to_add
         return self._by_type[Episode][str(uri)]
 
-    def get_show(self, uri: URI, name: str = None, **kwargs) -> Show:
+    def get_show(self, uri: URI, name: str | None = None, **kwargs) -> Show:
         assert isinstance(uri, URI)
         assert uri.type == Show
 
@@ -211,4 +219,3 @@ from .artist import Artist
 from .album import Album
 from .show import Show
 from .me import Me, SavedTracks
-from .abc import Cacheable
