@@ -6,7 +6,6 @@ from .connection import Connection
 from .cache import Cache
 from .uri import URI
 from .abc import Playable
-from .artist import Artist
 
 
 class Track(Playable):
@@ -140,3 +139,4 @@ class Track(Playable):
 
 
 from .album import Album
+from .artist import Artist
