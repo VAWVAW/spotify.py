@@ -23,9 +23,9 @@ class SavedTracks(PlayContext):
         self._uri: URI | None = None
         self._requested_time: float | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"name": self._name, "uri": str(self.uri)}
-        if not minimal and not short and self._items is not None:
+        if not minimal and self._items is not None:
             ret["tracks"] = {
                 "items": [
                     {
@@ -251,10 +251,10 @@ class Me(User):
             )
         self._requested_time = data["requested_time"]
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        ret = super().to_dict(short=short, minimal=minimal)
+    def to_dict(self, minimal: bool = False) -> dict:
+        ret = super().to_dict(minimal=minimal)
 
-        if not short and not minimal and self._albums is not None:
+        if not minimal and self._albums is not None:
             ret["albums"] = {
                 "items": [
                     {"album": album.to_dict(minimal=True)} for album in self._albums

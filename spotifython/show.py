@@ -22,7 +22,7 @@ class Show(PlayContext):
         self._description: str | None = None
         self._requested_time: float | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
         if self._name is not None:
             ret["name"] = self._name
@@ -40,7 +40,7 @@ class Show(PlayContext):
             if self._requested_time is not None:
                 ret["requested_time"] = self._requested_time
 
-            if not short and self._items is not None:
+            if self._items is not None:
                 ret["albums"] = {
                     "items": [item.to_dict(minimal=True) for item in self._items]
                 }

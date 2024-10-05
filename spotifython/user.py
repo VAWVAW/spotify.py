@@ -18,7 +18,7 @@ class User(Cacheable):
         self._playlists: list[Playlist] | None = None
         self._requested_time: float | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self.uri)}
         if self._name is not None:
             ret["display_name"] = self._name
@@ -30,7 +30,7 @@ class User(Cacheable):
             if self._name is not None:
                 ret["display_name"] = self._name
 
-            if not short and self._playlists is not None:
+            if self._playlists is not None:
                 ret["playlists"] = {
                     "items": [
                         playlist.to_dict(minimal=True) for playlist in self._playlists

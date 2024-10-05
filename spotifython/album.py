@@ -23,7 +23,7 @@ class Album(PlayContext):
         self._items: list[Track] | None = None
         self._images: list[dict[str, str | int | None]] | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
         if self._name is not None:
             ret["name"] = self._name
@@ -40,7 +40,7 @@ class Album(PlayContext):
                     for artist in self._artists
                 ]
 
-            if not short and self._items is not None:
+            if self._items is not None:
                 ret["tracks"] = {
                     "items": [
                         {"uri": str(item.uri), "name": item.name}

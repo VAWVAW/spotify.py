@@ -18,9 +18,7 @@ class Episode(Playable):
         self._images: list[dict[str, str | int | None]] | None = None
         self._show: Show | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        del short
-
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
         if self._name is not None:
             ret["name"] = self._name

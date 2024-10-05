@@ -16,8 +16,7 @@ class Artist(Cacheable):
         super().__init__(uri=uri, cache=cache, name=name, **kwargs)
         self._requested_time: float | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        del short
+    def to_dict(self, minimal: bool = False) -> dict:
 
         ret = {"uri": str(self._uri)}
         if self._name is not None:

@@ -35,7 +35,7 @@ class Playlist(PlayContext):
         self._images: list[dict[str, str | int | None]] | None = None
         self._requested_time: float | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
         if self._name is not None:
             ret["name"] = self._name
@@ -62,7 +62,7 @@ class Playlist(PlayContext):
             if self._requested_time is not None:
                 ret["requested_time"] = self._requested_time
 
-            if not short and self._items is not None:
+            if self._items is not None:
                 ret["tracks"] = {
                     "items": [
                         {

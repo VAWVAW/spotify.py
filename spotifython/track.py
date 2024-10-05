@@ -20,9 +20,7 @@ class Track(Playable):
         self._album: Album | None = None
         self._artists: list[Artist] | None = None
 
-    def to_dict(self, short: bool = False, minimal: bool = False) -> dict:
-        del short
-
+    def to_dict(self, minimal: bool = False) -> dict:
         ret = {"uri": str(self._uri)}
         if self._name is not None:
             ret["name"] = self._name
