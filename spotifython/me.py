@@ -47,8 +47,9 @@ class SavedTracks(PlayContext):
         # get saved tracks
         offset = 0
         limit = 50
+        fields = "next,items(added_at,track(uri,name))"
         endpoint = connection.add_parameters_to_endpoint(
-            "me/tracks", offset=offset, limit=limit, fields="items(uri,name)"
+            "me/tracks", offset=offset, limit=limit, fields=fields
         )
 
         if (response := connection.make_request("GET", endpoint)) is not None:
@@ -61,7 +62,7 @@ class SavedTracks(PlayContext):
         if data["next"] is not None:
             while True:
                 endpoint = connection.add_parameters_to_endpoint(
-                    "me/tracks", offset=offset, limit=limit, fields="items(uri,name)"
+                    "me/tracks", offset=offset, limit=limit, fields=fields
                 )
                 offset += limit
                 if (response := connection.make_request("GET", endpoint)) is not None:
