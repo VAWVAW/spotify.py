@@ -234,6 +234,8 @@ class Me(User):
 
         self._albums = []
         for album in data["albums"]["items"]:
+            if album == {}:
+                continue
             self._albums.append(
                 self._cache.get_album(
                     uri=URI(album["album"]["uri"]),
@@ -242,6 +244,8 @@ class Me(User):
             )
         self._playlists = []
         for playlist in data["playlists"]["items"]:
+            if playlist == {}:
+                continue
             self._playlists.append(
                 self._cache.get_playlist(
                     uri=URI(playlist["uri"]),
