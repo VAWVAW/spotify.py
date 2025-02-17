@@ -419,6 +419,8 @@ class Client:
             element_type += "s"
             ret[element_type] = []
             for element in data[element_type]["items"]:
+                if element is None:
+                    continue
                 ret[element_type].append(
                     self._cache.get_element(
                         uri=URI(element["uri"]), name=element["name"]

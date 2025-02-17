@@ -50,8 +50,8 @@ from .abc import Playable, PlayContext, Cacheable
 VersionInfo = namedtuple("VersionInfo", "major minor micro releaselevel serial")
 
 version_info = VersionInfo(
-    major=0, minor=2, micro=7, releaselevel="development", serial=0
+    major=0, minor=2, micro=12, releaselevel="development", serial=0
 )
-__version__ = "0.2.11"
+__version__ = "0.2.12"
 
 logging.getLogger(__name__).addHandler(logging.NullHandler())
